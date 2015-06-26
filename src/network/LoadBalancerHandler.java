@@ -7,6 +7,7 @@ public class LoadBalancerHandler extends ChannelHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        ctx.read();
         ctx.write(msg);
     }
 
