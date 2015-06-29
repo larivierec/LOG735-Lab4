@@ -9,6 +9,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import network.WebSocketServerHandler;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,10 +46,13 @@ public class WebSocketServer implements IServer{
                             @Override
                             public void initChannel(SocketChannel ch) throws Exception {
                                 ChannelPipeline pipeline = ch.pipeline();
+                                pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+                                pipeline.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                                pipeline.addLast(new ObjectEncoder());
                                 pipeline.addLast(new HttpServerCodec());
                                 pipeline.addLast(new HttpObjectAggregator(65536));
                                 pipeline.addLast(new WebSocketServerCompressionHandler());
-                                ch.pipeline().addLast(new WebSocketServerHandler());
+                                pipeline.addLast(new WebSocketServerHandler());
                             }
                         })
                         .option(ChannelOption.SO_BACKLOG, 128)          // (5)

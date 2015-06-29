@@ -5,15 +5,15 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.ByteBuffer;
 
 public class Client {
 
@@ -37,6 +37,8 @@ public class Client {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
+                    ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                    ch.pipeline().addLast(new ObjectEncoder());
                     ch.pipeline().addLast(new ChatServerHandler());
                 }
             });
