@@ -2,10 +2,15 @@ package network;
 
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import server.IServer;
 
 public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
-    private LoadBalancingProtocol   mLoadBalancingProtocol = new LoadBalancingProtocol();
+    private LoadBalancingProtocol mLoadBalancingProtocol = new LoadBalancingProtocol();
+
+    public LoadBalancingHandler(IServer e){
+        mLoadBalancingProtocol.addObserver(e);
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

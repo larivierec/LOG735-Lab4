@@ -10,7 +10,7 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import network.ChatServerHandler;
+import network.ChatClientHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,9 +20,16 @@ public class Client {
     private String  mIPAddress;
     private Integer mConnectionPortNumber;
 
-    public Client(String ipAddr, int portNumber) {
+    private String mUser;
+    private String mPass;
+    private String mRoom;
+
+    public Client(String ipAddr, int portNumber, String user, String pass, String roomName) {
         this.mIPAddress = ipAddr;
         this.mConnectionPortNumber = portNumber;
+        this.mUser = user;
+        this.mPass = pass;
+        this.mRoom = roomName;
     }
 
     public void startClient(){
@@ -39,7 +46,7 @@ public class Client {
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(new ChatServerHandler());
+                    ch.pipeline().addLast(new ChatClientHandler(mUser, mPass, mRoom));
                 }
             });
 
@@ -69,7 +76,7 @@ public class Client {
     }
 
     public static void main(String[]args){
-        Client e = new Client(args[0], Integer.parseInt(args[1]));
+        Client e = new Client(args[0], Integer.parseInt(args[1]), args[2], args[3], args[4]);
         e.startClient();
     }
 

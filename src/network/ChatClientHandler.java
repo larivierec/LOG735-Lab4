@@ -1,37 +1,35 @@
 package network;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import server.ChatServer;
 
-@ChannelHandler.Sharable
-
-public class ChatServerHandler extends ChannelHandlerAdapter{
+public class ChatClientHandler extends ChannelHandlerAdapter{
 
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-
     private ChatProtocol mChatProtocol = new ChatProtocol();
-    private Integer mListenPort;
-    private String  mIPAddress;
 
-    public ChatServerHandler(String ipAddr, Integer listenPort, ChatServer e){
-        this.mIPAddress = ipAddr;
-        this.mListenPort = listenPort;
-        mChatProtocol.addObserver(e);
+    private String mUsername;
+    private String mPassword;
+    private String mVirtualRoomName;
+
+    public ChatClientHandler(String user, String pass, String room){
+        this.mUsername = user;
+        this.mPassword = pass;
+        this.mVirtualRoomName = room;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        String[] arrayToSend = new String[3];
-        arrayToSend[0] = "ServerData";
-        arrayToSend[1] = mIPAddress;
-        arrayToSend[2] = mListenPort.toString();
+        String[] arrayToSend = new String[4];
+        arrayToSend[0] = "ClientData";
+        arrayToSend[1] = mUsername;
+        arrayToSend[2] = mPassword;
+        arrayToSend[3] = mVirtualRoomName;
 
         ctx.writeAndFlush(arrayToSend);
     }
@@ -50,7 +48,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             ctx.close();
         }*/
     }
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

@@ -1,12 +1,9 @@
 package server;
 
-
+import interfaces.IObserver;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -14,17 +11,20 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
+
+import java.util.ArrayList;
+import java.util.Observable;
 
 public class ChatServer implements IServer{
 
     private String      mIPAddress;
     private Integer     mListenPortNumber;
     private Integer     mConnectionPortNumber;
+
+    private ArrayList<ChatServer> mChatServers = new ArrayList<ChatServer>();
 
     public ChatServer(String ipAddr, int portNumber, int connectionPort){
         this.mIPAddress = ipAddr;
@@ -36,7 +36,7 @@ public class ChatServer implements IServer{
     public void startServer() {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber);
+        final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber, this);
         /**
          *   to get remote ip address use: InetSocketAddres addr = (InetSocketAddress) ctx.channel().remoteAddress();
          *   addr.getSocketAddress().getHostAddress();
@@ -78,6 +78,7 @@ public class ChatServer implements IServer{
             ChannelFuture clientFuture = clientBootstrap.connect(mIPAddress, mConnectionPortNumber).sync();
             clientFuture.channel().closeFuture().sync();
 
+
         } catch(Exception e){
             e.printStackTrace();
         } finally {
@@ -95,5 +96,10 @@ public class ChatServer implements IServer{
             System.out.println("Il vous manque des paramètres");
             System.exit(0);
         }
+    }
+
+    @Override
+    public void update(Observable e, Object t) {
+        System.out.println(t);
     }
 }

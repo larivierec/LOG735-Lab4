@@ -1,5 +1,8 @@
 package server;
 
-public interface IServer {
+
+import interfaces.IObserver;
+
+public interface IServer extends IObserver {
     public void startServer();
 }

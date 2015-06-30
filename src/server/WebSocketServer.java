@@ -16,6 +16,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.WebSocketServerHandler;
 
+import java.util.Observable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WebSocketServer implements IServer{
@@ -86,4 +87,8 @@ public class WebSocketServer implements IServer{
         }
     }
 
+    @Override
+    public void update(Observable e, Object t) {
+
+    }
 }

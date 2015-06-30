@@ -15,6 +15,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.LoadBalancingHandler;
 
+import java.util.Observable;
+
 public class LoadBalancerServer implements IServer{
 
     private String      mIPAddress;
@@ -39,7 +41,7 @@ public class LoadBalancerServer implements IServer{
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                             ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                             ch.pipeline().addLast(new ObjectEncoder());
-                            ch.pipeline().addLast(new LoadBalancingHandler());
+                            ch.pipeline().addLast(new LoadBalancingHandler(LoadBalancerServer.this));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
@@ -70,5 +72,10 @@ public class LoadBalancerServer implements IServer{
             System.out.println("Il vous manque des paramètres");
             System.exit(0);
         }
+    }
+
+    @Override
+    public void update(Observable e, Object t) {
+        
     }
 }
