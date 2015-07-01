@@ -1,9 +1,8 @@
 package network;
 
 import client.ChannelManager;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerAdapter;
-import io.netty.channel.ChannelHandlerContext;
+
+import io.netty.channel.*;
 
 import java.net.InetSocketAddress;
 
@@ -22,7 +21,7 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead(final ChannelHandlerContext ctx, Object msg) {
         Message dataIncoming = mLoadBalancingProtocol.parseProtocolData(msg);
         InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
 

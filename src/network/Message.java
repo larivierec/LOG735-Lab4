@@ -16,4 +16,8 @@ public class Message implements Serializable {
     public String[] getData() {
         return mData;
     }
+
+    public void addElement(String data){
+        this.mData[this.mData.length] = data;
+    }
 }
