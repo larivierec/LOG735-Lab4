@@ -47,6 +47,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             Integer port = Integer.parseInt(m.getData()[2]);
             if(mListenPort != port)
                 new ServerToServerConnection(m.getData()[1], m.getData()[2]);
+        }else if(commandID.equals("IncomingMessage")){
+            String destinationUser = m.getData()[1];
+            String sourceUser = m.getData()[2];
+            String virtualRoom = m.getData()[3];
+            String theMessage = m.getData()[4];
         }
     }
 
