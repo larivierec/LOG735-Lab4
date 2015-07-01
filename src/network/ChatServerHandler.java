@@ -1,16 +1,13 @@
 package network;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import server.ChatServer;
 
 @ChannelHandler.Sharable
-
 public class ChatServerHandler extends ChannelHandlerAdapter{
 
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
@@ -19,10 +16,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     private Integer mListenPort;
     private String  mIPAddress;
 
-    public ChatServerHandler(String ipAddr, Integer listenPort, ChatServer e){
+    public ChatServerHandler(String ipAddr, Integer listenPort){
         this.mIPAddress = ipAddr;
         this.mListenPort = listenPort;
-        mChatProtocol.addObserver(e);
     }
 
     @Override
@@ -38,7 +34,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        mChatProtocol.parseProtocolData(msg);
+        Message m = mChatProtocol.parseProtocolData(msg);
+
         /*for (Channel c: channels) {
             if (c != ctx.channel()) {
                 c.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg + '\n');

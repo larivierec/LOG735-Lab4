@@ -7,18 +7,10 @@ public class ChatProtocol extends Protocol {
     }
 
     @Override
-    void parseProtocolData(Object msg) {
-        if(msg.toString().equals("Message")){
-
+    Message parseProtocolData(Object msg) {
+        if(msg instanceof Message){
+            return (Message) msg;
         }
-        else if(msg.toString().equals("Connection")){
-
-        }
-        else if(msg.toString().equals("Disconnection")){
-
-        }
-        else{
-
-        }
+        return new Message((String[]) msg);
     }
 }

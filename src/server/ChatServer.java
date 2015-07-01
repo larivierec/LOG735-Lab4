@@ -1,6 +1,5 @@
 package server;
 
-import interfaces.IObserver;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -15,7 +14,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
 
-import java.util.ArrayList;
 import java.util.Observable;
 
 public class ChatServer implements IServer{
@@ -23,8 +21,6 @@ public class ChatServer implements IServer{
     private String      mIPAddress;
     private Integer     mListenPortNumber;
     private Integer     mConnectionPortNumber;
-
-    private ArrayList<ChatServer> mChatServers = new ArrayList<ChatServer>();
 
     public ChatServer(String ipAddr, int portNumber, int connectionPort){
         this.mIPAddress = ipAddr;
@@ -36,7 +32,7 @@ public class ChatServer implements IServer{
     public void startServer() {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber, this);
+        final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber);
         /**
          *   to get remote ip address use: InetSocketAddres addr = (InetSocketAddress) ctx.channel().remoteAddress();
          *   addr.getSocketAddress().getHostAddress();
@@ -45,7 +41,7 @@ public class ChatServer implements IServer{
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class) // (3)
+                    .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
@@ -55,16 +51,16 @@ public class ChatServer implements IServer{
                             ch.pipeline().addLast(serverHandler);
                         }
                     })
-                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             serverBootstrap.bind(mListenPortNumber);
 
-            Bootstrap clientBootstrap = new Bootstrap(); // (1)
-            clientBootstrap.group(workerGroup); // (2)
-            clientBootstrap.channel(NioSocketChannel.class); // (3)
+            Bootstrap clientBootstrap = new Bootstrap();
+            clientBootstrap.group(workerGroup);
+            clientBootstrap.channel(NioSocketChannel.class);
             clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            clientBootstrap.option(ChannelOption.TCP_NODELAY, true);// (4)
+            clientBootstrap.option(ChannelOption.TCP_NODELAY, true);
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {

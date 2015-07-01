@@ -1,22 +1,46 @@
 package network;
 
+import client.ChannelManager;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import server.IServer;
+
+import java.net.InetSocketAddress;
 
 public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
-    private LoadBalancingProtocol mLoadBalancingProtocol = new LoadBalancingProtocol();
+    private final LoadBalancingProtocol mLoadBalancingProtocol = new LoadBalancingProtocol();
 
-    public LoadBalancingHandler(IServer e){
-        mLoadBalancingProtocol.addObserver(e);
+    public LoadBalancingHandler(){
     }
 
     @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        ChannelManager.getInstance().addChannel(ctx);
+    }
+
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        mLoadBalancingProtocol.parseProtocolData(msg);
-        //This echos everything read back.
-        //ctx.write(msg);
+        Message dataIncoming = mLoadBalancingProtocol.parseProtocolData(msg);
+        InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
+
+        if(dataIncoming.getData()[0].equals("ServerData")){
+            dataIncoming.getData()[0] = "AvailableServer";
+            ChannelManager.getInstance().getPortMapping().put(addr.getPort(), Integer.parseInt(dataIncoming.getData()[2]));
+            ChannelManager.getInstance().getServerList().add(dataIncoming);
+        }
+
+        for(Channel c : ChannelManager.getInstance().getChannels()){
+            System.out.println("Writing data to other channels");
+            InetSocketAddress tempAddr = (InetSocketAddress)c.remoteAddress();
+            for(Message m : ChannelManager.getInstance().getServerList()){
+                if(ChannelManager.getInstance().getPortMapping().get(tempAddr.getPort()) != Integer.parseInt(m.getData()[2])){
+                    c.writeAndFlush(m);
+                }
+            }
+        }
     }
 
     @Override

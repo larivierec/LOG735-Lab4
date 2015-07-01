@@ -37,16 +37,13 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         mChatProtocol.parseProtocolData(msg);
-        /*for (Channel c: channels) {
+        for (Channel c: channels) {
             if (c != ctx.channel()) {
                 c.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg + '\n');
             } else {
                 c.writeAndFlush("[you] " + msg + '\n');
             }
         }
-        if ("bye".equals(((String)msg).toLowerCase())) {
-            ctx.close();
-        }*/
     }
 
     @Override
