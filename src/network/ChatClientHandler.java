@@ -26,7 +26,7 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         String[] arrayToSend = new String[4];
-        arrayToSend[0] = "ClientData";
+        arrayToSend[0] = "RequestServer";
         arrayToSend[1] = mUsername;
         arrayToSend[2] = mPassword;
         arrayToSend[3] = mVirtualRoomName;

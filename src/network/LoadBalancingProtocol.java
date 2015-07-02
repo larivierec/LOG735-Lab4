@@ -1,5 +1,7 @@
 package network;
 
+import messages.Message;
+
 public class LoadBalancingProtocol extends Protocol {
 
     public LoadBalancingProtocol(){

@@ -1,4 +1,4 @@
-package client;
+package client.model;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -11,63 +11,55 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatClientHandler;
+import network.RelayHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class Client {
+public class ClientConnection {
 
     private String  mIPAddress;
     private Integer mConnectionPortNumber;
 
-    private String mUser;
+    private User mUser;
     private String mPass;
     private String mRoom;
+    private ChannelFuture mFutureChannel;
 
-    public Client(String ipAddr, int portNumber, String user, String pass, String roomName) {
+    public ClientConnection(String ipAddr, int portNumber, User user, String roomName) {
         this.mIPAddress = ipAddr;
         this.mConnectionPortNumber = portNumber;
         this.mUser = user;
-        this.mPass = pass;
+        this.mRoom = roomName;
+    }
+
+    public ClientConnection(String ipAddr, String portNumber, User user, String roomName) {
+        this.mIPAddress = ipAddr;
+        this.mConnectionPortNumber = Integer.parseInt(portNumber);
+        this.mUser = user;
         this.mRoom = roomName;
     }
 
     public void startClient(){
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            Bootstrap b = new Bootstrap(); // (1)
-            b.group(workerGroup); // (2)
-            b.channel(NioSocketChannel.class); // (3)
+            Bootstrap b = new Bootstrap();
+            b.group(workerGroup);
+            b.channel(NioSocketChannel.class);
             b.option(ChannelOption.SO_KEEPALIVE, true);
-            b.option(ChannelOption.TCP_NODELAY, true);// (4)
+            b.option(ChannelOption.TCP_NODELAY, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(new ChatClientHandler(mUser, mPass, mRoom));
+                    ch.pipeline().addLast(new ChatClientHandler(mUser.getUsername(), mUser.getHashedPassword(), mRoom));
                 }
             });
 
-            Channel f = b.connect(mIPAddress, mConnectionPortNumber).sync().channel();
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            ChannelFuture lastWriteFuture = null;
-               while(true) {
-                    String line = in.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    lastWriteFuture = f.writeAndFlush(line + "\r\n");
-                    if("bye".equals(line.toLowerCase())){
-                       f.closeFuture().sync();
-                       break;
-                   }
-               }
-
-            if (lastWriteFuture != null)
-                lastWriteFuture.sync();
-
+            ChannelFuture f = b.connect(mIPAddress, mConnectionPortNumber).channel().closeFuture().sync();
+            mFutureChannel = f;
         } catch(Exception e){
             e.printStackTrace();
         } finally {
@@ -75,9 +67,13 @@ public class Client {
         }
     }
 
-    public static void main(String[]args){
-        Client e = new Client(args[0], Integer.parseInt(args[1]), args[2], args[3], args[4]);
-        e.startClient();
+    public void sendMessage(String textToSend){
+        String[] arrayToSend = new String[2];
+        arrayToSend[0] = "IncomingMessage";
+        arrayToSend[1] = textToSend;
+        if(mFutureChannel != null){
+            mFutureChannel.channel().writeAndFlush(arrayToSend);
+        }
     }
 
 }

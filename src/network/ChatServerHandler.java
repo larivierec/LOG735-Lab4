@@ -1,24 +1,20 @@
 package network;
 
-import io.netty.bootstrap.Bootstrap;
+import client.model.User;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import messages.Message;
+import singleton.UserManager;
 
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
 
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private ChatProtocol mChatProtocol = new ChatProtocol();
+    private UserManager mUserManager = UserManager.getInstance();
+
     private Integer mListenPort;
     private String  mIPAddress;
 
@@ -52,6 +48,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             String sourceUser = m.getData()[2];
             String virtualRoom = m.getData()[3];
             String theMessage = m.getData()[4];
+        }else if(commandID.equals("Login")){
+            mUserManager.addUser(new User(Integer.parseInt(m.getData()[1]), m.getData()[2], m.getData()[3]));
         }
     }
 

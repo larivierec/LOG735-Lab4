@@ -1,5 +1,7 @@
 package network;
 
+import messages.Message;
+
 public class ChatProtocol extends Protocol {
 
     public ChatProtocol(){

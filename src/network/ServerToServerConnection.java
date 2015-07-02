@@ -42,14 +42,14 @@ public class ServerToServerConnection {
             });
 
             ChannelFuture f = mClientBootStrap.connect(mRemoteAddress, Integer.parseInt(mRemotePort)).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                            if(channelFuture.isSuccess()){
-                                System.out.println("Connection Established with server.");
-                            }
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                        if(channelFuture.isSuccess()){
+                            System.out.println("Connection Established with server.");
                         }
                     }
+                }
             );
         }catch(Exception e){
             e.printStackTrace();

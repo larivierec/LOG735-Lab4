@@ -1,5 +1,7 @@
 package network;
 
+import messages.Message;
+
 public abstract class Protocol {
 
     private String protocolName;

@@ -1,6 +1,5 @@
 package server;
 
-import client.Client;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,7 +16,6 @@ import io.netty.handler.logging.LoggingHandler;
 import network.WebSocketServerHandler;
 
 import java.util.Observable;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class WebSocketServer implements IServer{
 
@@ -25,7 +23,6 @@ public class WebSocketServer implements IServer{
     private int             mConnectionPortNumber;
     private int             mListeningPortNumber;
 
-    public CopyOnWriteArrayList<Client> mClientList = new CopyOnWriteArrayList<Client>();
 
     public WebSocketServer(String ipAddr, int connectionPort, int listenPort) {
         this.mIPAddress = ipAddr;

@@ -2,10 +2,9 @@ package database;
 
 
 import singleton.DatabaseManager;
-import client.User;
+import client.model.User;
 import util.Utilities;
 
-import java.security.MessageDigest;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,6 +1,6 @@
 package singleton;
 
-import client.User;
+import client.model.User;
 
 import java.util.ArrayList;
 import java.util.List;

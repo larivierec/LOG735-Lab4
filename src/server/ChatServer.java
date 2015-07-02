@@ -13,6 +13,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
+import singleton.UserManager;
 
 import java.util.Observable;
 
