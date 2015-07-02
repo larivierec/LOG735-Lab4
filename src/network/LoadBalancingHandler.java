@@ -1,6 +1,6 @@
 package network;
 
-import Singleton.ChannelManager;
+import singleton.ChannelManager;
 
 import io.netty.channel.*;
 

@@ -1,8 +1,8 @@
 package database;
 
-import Singleton.DatabaseManager;
+import singleton.DatabaseManager;
+import util.Utilities;
 
-import java.security.MessageDigest;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,19 +15,7 @@ public class InsertUserQuery{
 
     public InsertUserQuery(String username, char[] textPW){
         this.mUsername = username;
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(new String(textPW).getBytes());
-            byte[] digest = md.digest();
-            StringBuffer sb = new StringBuffer();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b & 0xff));
-            }
-            mHashedPW = sb.toString();
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
+        this.mHashedPW = Utilities.sha256(textPW);
     }
 
     public boolean execute(){
@@ -46,7 +34,7 @@ public class InsertUserQuery{
             prep = DatabaseManager.getInstance().prepareStatement("INSERT INTO LoginInfo(username,password)" +
                     "VALUES(?,?)");
             prep.setString(1,this.mUsername);
-            prep.setString(2,this.mHashedPW);
+            prep.setString(2, this.mHashedPW);
             prep.execute();
             return true;
         }

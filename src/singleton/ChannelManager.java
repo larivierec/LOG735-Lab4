@@ -1,4 +1,4 @@
-package Singleton;
+package singleton;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;

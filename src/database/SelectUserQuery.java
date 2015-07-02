@@ -1,8 +1,9 @@
 package database;
 
 
-import Singleton.DatabaseManager;
+import singleton.DatabaseManager;
 import client.User;
+import util.Utilities;
 
 import java.security.MessageDigest;
 import java.sql.PreparedStatement;
@@ -18,19 +19,7 @@ public class SelectUserQuery {
 
     public SelectUserQuery(String user, char[] textPW){
         this.mUsername = user;
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            md.update(new String(textPW).getBytes());
-            byte[] digest = md.digest();
-            StringBuffer sb = new StringBuffer();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b & 0xff));
-            }
-            mHashedPW = sb.toString();
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
+        mHashedPW = Utilities.sha256(textPW);
     }
 
     public User execute(){
@@ -40,8 +29,8 @@ public class SelectUserQuery {
 
         try {
             prep = DatabaseManager.getInstance().prepareStatement("SELECT * FROM LoginInfo " +
-                    "WHERE username = ?" +
-                    "AND password = ?");
+                    "WHERE username = ? " +
+                    "AND password = ? ");
             prep.setString(1,this.mUsername);
             prep.setString(2,this.mHashedPW);
             prep.execute();
