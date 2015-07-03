@@ -42,7 +42,7 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
             String ip = dataIncoming.getData()[1];
             Integer port = Integer.parseInt(dataIncoming.getData()[2]);
             notifyObservers(dataIncoming);
-        }else if(commandID.equals("IncorrectAuthentification")){
+        }else if(commandID.equals("IncorrectAuthentication")){
             notifyObservers(dataIncoming);
         }else if(commandID.equals("Authenticated")){
             notifyObservers(dataIncoming);

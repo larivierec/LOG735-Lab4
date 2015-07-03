@@ -1,6 +1,7 @@
 package client.ui;
 
 import client.model.ClientConnection;
+import client.model.PersistantUser;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientHandler;
@@ -109,13 +110,14 @@ public class MainFrame extends JFrame implements IObserver{
         if(t instanceof Message){
             Message localMessage = (Message) t;
             String command = localMessage.getData()[0];
-            if(command.equals("IncorrectAuthentification")){
+            if(command.equals("IncorrectAuthentication")){
                 JOptionPane.showMessageDialog(null, "Username or password is incorrect please try again.");
             }else if(command.equals("ServerCoordinates")){
                 ClientConnection tempConnect = new ClientConnection(localMessage.getData()[1], localMessage.getData()[2],mChatClientHandler);
                 this.setClientConnection(tempConnect);
                 tempConnect.startClient();
             }else if(command.equals("Authenticated")){
+                PersistantUser.getInstance().setLoggedInUser(localMessage);
                 mChatPanel.setClientConnection(mClientConnection);
                 getContentPane().removeAll();
                 getContentPane().add(mChatPanel);

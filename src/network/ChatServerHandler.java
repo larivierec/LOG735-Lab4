@@ -7,7 +7,12 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
+import singleton.ChannelManager;
 import singleton.UserManager;
+
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
@@ -17,6 +22,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
     private UserManager mUserManager = UserManager.getInstance();
     private LoginSystem mLoginSystem = new LoginSystem();
+
+    private ArrayList<ServerToServerConnection> mServerToServerMap = new ArrayList<ServerToServerConnection>();
 
     private Integer mListenPort;
     private String  mIPAddress;
@@ -45,22 +52,25 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             String ipAddr = m.getData()[1];
             Integer port = Integer.parseInt(m.getData()[2]);
             if(mListenPort != port)
-                new ServerToServerConnection(m.getData()[1], m.getData()[2]);
-
+                mServerToServerMap.add(new ServerToServerConnection(m.getData()[1], m.getData()[2]));
         }else if(commandID.equals("IncomingMessage")){
-            String destinationUser = m.getData()[1];
-            String sourceUser = m.getData()[2];
-            String virtualRoom = m.getData()[3];
-            String theMessage = m.getData()[4];
+            notifyServers(m);
         }else if(commandID.equals("Login")){
-            if(mLoginSystem.authenticateUser(m.getData()[1],m.getData()[2].toCharArray())) {
-                mUserManager.addUser(mLoginSystem.getLoggedInUser());
-                String[] array = {"Authenticated"};
+            String username = m.getData()[1];
+            String hashedPW = m.getData()[2];
+            String roomID = m.getData()[3];
+
+            User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
+
+            if(temp != null) {
+                mUserManager.addUser(temp, roomID);
+
+                String[] array = {"Authenticated", String.valueOf(temp.getUserID()), temp.getUsername(), temp.getHashedPassword(), roomID};
                 ctx.writeAndFlush(array);
             }
             else{
                 String[] toReturn = new String[2];
-                toReturn[0] = "IncorrectAuthentification";
+                toReturn[0] = "IncorrectAuthentication";
                 toReturn[1] = m.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
@@ -72,5 +82,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         System.out.println(cause.getMessage());
+    }
+
+    public void notifyServers(Message m){
+        for(ServerToServerConnection conn : mServerToServerMap){
+            conn.getChannel().writeAndFlush(m);
+        }
     }
 }

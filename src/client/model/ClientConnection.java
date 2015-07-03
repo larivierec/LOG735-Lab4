@@ -15,6 +15,7 @@ import network.RelayHandler;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class ClientConnection {
 
@@ -72,13 +73,18 @@ public class ClientConnection {
         this.mFutureChannel.channel().writeAndFlush(arrayToSend);
     }
 
-    public void sendMessage(String textToSend){
-        String[] arrayToSend = new String[2];
+    public void sendMessage(String textToSend, String roomID){
+        String[] arrayToSend = new String[3];
         arrayToSend[0] = "IncomingMessage";
         arrayToSend[1] = textToSend;
+        arrayToSend[2] = roomID;
         if(mFutureChannel != null){
             mFutureChannel.channel().writeAndFlush(arrayToSend);
         }
+    }
+
+    public void sendPrivateMessage(String textToSend, List<User> listOfUsers){
+
     }
 
 }

@@ -1,6 +1,7 @@
 package client.ui;
 
 import client.model.ClientConnection;
+import client.model.PersistantUser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +37,7 @@ public class ChatPanel extends JPanel {
                 new ActionListener(){
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        mClientConnection.sendMessage(mTextArea.getText());
+                        mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser().getCurrentRoom());
                     }
                 }
         );

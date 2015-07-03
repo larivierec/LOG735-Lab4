@@ -52,7 +52,7 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
                 }
             }
             if(pair != null && m != null){
-                pair.setValue(usage + 1);
+                pair.setValue(usage + 2);
 
                 String remoteHost = m.getData()[1];
                 Integer remotePort = Integer.parseInt(m.getData()[2]);

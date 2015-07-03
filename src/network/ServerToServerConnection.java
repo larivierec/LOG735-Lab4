@@ -19,6 +19,8 @@ public class ServerToServerConnection {
     private String mRemoteAddress;
     private String mRemotePort;
 
+    private ChannelFuture mServerToServerChannel;
+
     public ServerToServerConnection(String remoteAddress, String remotePort){
         this.mRemoteAddress = remoteAddress;
         this.mRemotePort = remotePort;
@@ -41,7 +43,7 @@ public class ServerToServerConnection {
                 }
             });
 
-            ChannelFuture f = mClientBootStrap.connect(mRemoteAddress, Integer.parseInt(mRemotePort)).addListener(
+            mServerToServerChannel = mClientBootStrap.connect(mRemoteAddress, Integer.parseInt(mRemotePort)).addListener(
                 new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
@@ -54,5 +56,9 @@ public class ServerToServerConnection {
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    public Channel getChannel(){
+        return this.mServerToServerChannel.channel();
     }
 }

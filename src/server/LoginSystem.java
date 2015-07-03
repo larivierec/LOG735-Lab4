@@ -3,25 +3,24 @@ package server;
 import client.model.User;
 import database.SelectUserQuery;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LoginSystem {
-    private User mLoggedInUser;
+    private List<User> mLoggedInUsers = new ArrayList<User>();
     public LoginSystem(){}
 
-    public boolean authenticateUser(String username, char[] pw){
+    public User authenticateUser(String username, char[] pw){
         SelectUserQuery query = new SelectUserQuery(username, pw);
         User theUser = query.execute();
         if(theUser != null) {
-            mLoggedInUser = theUser;
-            return true;
+            mLoggedInUsers.add(theUser);
+            return theUser;
         }
-        return false;
+        return null;
     }
 
-    public User getLoggedInUser() {
-        return mLoggedInUser;
-    }
-
-    public void setLoggedInUser(User mLoggedInUser) {
-        this.mLoggedInUser = mLoggedInUser;
+    public List<User> getLoggedInUsers() {
+        return mLoggedInUsers;
     }
 }
