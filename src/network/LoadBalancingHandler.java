@@ -1,10 +1,5 @@
 package network;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
-import io.netty.util.concurrent.Promise;
 import messages.Message;
 import singleton.ChannelManager;
 
@@ -61,49 +56,6 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
                 String remoteHost = m.getData()[1];
                 Integer remotePort = Integer.parseInt(m.getData()[2]);
-
-
-                Bootstrap b = new Bootstrap();
-                Promise<Channel> promise = ctx.executor().newPromise();
-                    promise.addListener(
-                            new FutureListener<Channel>() {
-                                @Override
-                                public void operationComplete(final Future<Channel> future) throws Exception {
-                                    final Channel outboundChannel = future.getNow();
-                                    if (future.isSuccess()) {
-                                        String[] toSend = new String[1];
-                                        toSend[0] = "established";
-                                        ChannelFuture responseFuture = ctx.channel().writeAndFlush(toSend);
-                                        responseFuture.addListener(new ChannelFutureListener() {
-                                            @Override
-                                            public void operationComplete(ChannelFuture channelFuture) {
-                                                ctx.pipeline().remove(LoadBalancingHandler.this);
-                                                outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
-                                                ctx.pipeline().addLast(new RelayHandler(outboundChannel));
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-
-                    final Channel inboundChannel = ctx.channel();
-                    b.group(inboundChannel.eventLoop())
-                            .channel(NioSocketChannel.class)
-                            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-                            .option(ChannelOption.SO_KEEPALIVE, true)
-                            .handler(new ChatHandler(promise));
-
-                    b.connect(remoteHost, remotePort).addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (future.isSuccess()) {
-                                // Connection established use handler provided results
-                            } else {
-                                // Close the connection if the connection attempt has failed.
-                                ctx.channel().writeAndFlush("HELLLLLOOOO");
-                            }
-                        }
-                    });
             }
         }
 
