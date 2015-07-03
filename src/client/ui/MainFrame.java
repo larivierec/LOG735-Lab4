@@ -1,8 +1,10 @@
 package client.ui;
 
 import client.model.ClientConnection;
-import client.model.LoginSystem;
 import interfaces.IObserver;
+import messages.Message;
+import network.ChatClientHandler;
+import util.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +14,6 @@ import java.util.Observable;
 
 public class MainFrame extends JFrame implements IObserver{
 
-    private LoginSystem mLoginSystem;
     private RegisterPanel mRegistrationPanel = new RegisterPanel();
     private ChatPanel     mChatPanel;
     private JPanel mLoginRegistrationPanel = new JPanel();
@@ -27,10 +28,13 @@ public class MainFrame extends JFrame implements IObserver{
     private JButton mButtonRegister = new JButton();
     private JButton mButtonLogin = new JButton();
 
+    private ClientConnection mClientConnection;
+    private ChatClientHandler mChatClientHandler;
 
-    public MainFrame(final LoginSystem login){
-        mLoginSystem = login;
-        mChatPanel = new ChatPanel(mLoginSystem);
+
+    public MainFrame(){
+
+        mChatPanel = new ChatPanel();
         this.setTitle("WOW! ChatServer");
         mLoginRegistrationPanel.setLayout(new BorderLayout());
         mLoginRegistrationPanel.setSize(550, 550);
@@ -63,23 +67,9 @@ public class MainFrame extends JFrame implements IObserver{
         mButtonLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(login.authenticateUser(mUsernameBox.getText(), mPasswordBox.getPassword())){
-                    login.setClientConnection(new ClientConnection(login.getIPLoad(), login.getPortLoad(), login.getLoggedInUser(), mVirtualChatBox.getText()));
-                    getContentPane().removeAll();
-                    getContentPane().add(mChatPanel);
-                    revalidate();
-                    repaint();
 
-                    new Runnable(){
-                        @Override
-                        public void run() {
-                            login.getClientConnection().startClient();
-                        }
-                    };
-                }
-                else{
-                    JOptionPane.showMessageDialog(null,"User login invalid, retry.");
-                }
+                String[] array = {"Login", mUsernameBox.getText(), Utilities.sha256(mPasswordBox.getPassword()), mVirtualChatBox.getText()};
+                mClientConnection.sendLoginRequest(array);
             }
         });
 
@@ -106,13 +96,44 @@ public class MainFrame extends JFrame implements IObserver{
         this.setVisible(true);
     }
 
-    public static void main(String[]args){
-        LoginSystem login = new LoginSystem(args[0], args[1]);
-        new MainFrame(login);
+    public void setClientConnection(ClientConnection c){
+        this.mClientConnection = c;
+    }
+
+    public void setChatClientHandler(ChatClientHandler c){
+        this.mChatClientHandler = c;
     }
 
     @Override
     public void update(Observable e, Object t) {
-
+        if(t instanceof Message){
+            Message localMessage = (Message) t;
+            String command = localMessage.getData()[0];
+            if(command.equals("IncorrectAuthentification")){
+                JOptionPane.showMessageDialog(null, "Username or password is incorrect please try again.");
+            }else if(command.equals("ServerCoordinates")){
+                ClientConnection tempConnect = new ClientConnection(localMessage.getData()[1], localMessage.getData()[2],mChatClientHandler);
+                this.setClientConnection(tempConnect);
+                tempConnect.startClient();
+            }else if(command.equals("Authenticated")){
+                mChatPanel.setClientConnection(mClientConnection);
+                getContentPane().removeAll();
+                getContentPane().add(mChatPanel);
+                revalidate();
+                repaint();
+            }
+        }
     }
+
+    public static void main(String[]args){
+        ChatClientHandler c = new ChatClientHandler();
+        MainFrame frame = new MainFrame();
+        c.addObserver(frame);
+        ClientConnection conn = new ClientConnection(args[0], args[1],c);
+        frame.setClientConnection(conn);
+        frame.setChatClientHandler(c);
+
+        conn.startClient();
+    }
+
 }

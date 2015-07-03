@@ -18,7 +18,7 @@ public class SelectUserQuery {
 
     public SelectUserQuery(String user, char[] textPW){
         this.mUsername = user;
-        mHashedPW = Utilities.sha256(textPW);
+        mHashedPW = String.valueOf(textPW);
     }
 
     public User execute(){

@@ -1,6 +1,6 @@
 package client.ui;
 
-import client.model.LoginSystem;
+import client.model.ClientConnection;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ChatPanel extends JPanel {
+
+    private ClientConnection mClientConnection;
 
     private JLabel      mRoomLabel = new JLabel("Room List");
     private JScrollPane mRoomList = new JScrollPane();
@@ -19,7 +21,7 @@ public class ChatPanel extends JPanel {
     private JTextArea mTextArea = new JTextArea(3,2);
     private JButton mSendMessageButton = new JButton("Send");
 
-    public ChatPanel(final LoginSystem mLoginSystem) {
+    public ChatPanel() {
         this.setLayout(new BorderLayout());
         mRoomLabel.setBounds(new Rectangle(2, 2, 130, 30));
         mRoomList.setBounds(new Rectangle(2, 40, 130, 570));
@@ -34,7 +36,7 @@ public class ChatPanel extends JPanel {
                 new ActionListener(){
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        mLoginSystem.getClientConnection().sendMessage(mTextArea.getText());
+                        mClientConnection.sendMessage(mTextArea.getText());
                     }
                 }
         );
@@ -49,5 +51,9 @@ public class ChatPanel extends JPanel {
         this.add(mSendMessageButton);
         this.add(new JLabel());
         this.setVisible(true);
+    }
+
+    public void setClientConnection(ClientConnection c){
+        this.mClientConnection = c;
     }
 }

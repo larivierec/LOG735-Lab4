@@ -1,5 +1,6 @@
 package network;
 
+import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
 import io.netty.channel.group.ChannelGroup;
@@ -13,7 +14,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private ChatProtocol mChatProtocol = new ChatProtocol();
+
     private UserManager mUserManager = UserManager.getInstance();
+    private LoginSystem mLoginSystem = new LoginSystem();
 
     private Integer mListenPort;
     private String  mIPAddress;
@@ -43,13 +46,24 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             Integer port = Integer.parseInt(m.getData()[2]);
             if(mListenPort != port)
                 new ServerToServerConnection(m.getData()[1], m.getData()[2]);
+
         }else if(commandID.equals("IncomingMessage")){
             String destinationUser = m.getData()[1];
             String sourceUser = m.getData()[2];
             String virtualRoom = m.getData()[3];
             String theMessage = m.getData()[4];
         }else if(commandID.equals("Login")){
-            mUserManager.addUser(new User(Integer.parseInt(m.getData()[1]), m.getData()[2], m.getData()[3]));
+            if(mLoginSystem.authenticateUser(m.getData()[1],m.getData()[2].toCharArray())) {
+                mUserManager.addUser(mLoginSystem.getLoggedInUser());
+                String[] array = {"Authenticated"};
+                ctx.writeAndFlush(array);
+            }
+            else{
+                String[] toReturn = new String[2];
+                toReturn[0] = "IncorrectAuthentification";
+                toReturn[1] = m.getData()[2];
+                ctx.writeAndFlush(toReturn);
+            }
         }
     }
 

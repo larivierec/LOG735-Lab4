@@ -25,6 +25,7 @@ public class ClientConnection {
     private String mPass;
     private String mRoom;
     private ChannelFuture mFutureChannel;
+    private ChatClientHandler mChatClientHandler;
 
     public ClientConnection(String ipAddr, int portNumber, User user, String roomName) {
         this.mIPAddress = ipAddr;
@@ -33,11 +34,10 @@ public class ClientConnection {
         this.mRoom = roomName;
     }
 
-    public ClientConnection(String ipAddr, String portNumber, User user, String roomName) {
+    public ClientConnection(String ipAddr, String portNumber, ChatClientHandler c) {
         this.mIPAddress = ipAddr;
         this.mConnectionPortNumber = Integer.parseInt(portNumber);
-        this.mUser = user;
-        this.mRoom = roomName;
+        mChatClientHandler = c;
     }
 
     public void startClient(){
@@ -54,17 +54,22 @@ public class ClientConnection {
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(new ChatClientHandler(mUser.getUsername(), mUser.getHashedPassword(), mRoom));
+                    ch.pipeline().addLast(mChatClientHandler);
                 }
             });
 
-            ChannelFuture f = b.connect(mIPAddress, mConnectionPortNumber).channel().closeFuture().sync();
-            mFutureChannel = f;
+            mFutureChannel = b.connect(mIPAddress, mConnectionPortNumber).sync();
+            mFutureChannel.channel().closeFuture().sync();
+
         } catch(Exception e){
             e.printStackTrace();
         } finally {
             workerGroup.shutdownGracefully();
         }
+    }
+
+    public void sendLoginRequest(String[] arrayToSend){
+        this.mFutureChannel.channel().writeAndFlush(arrayToSend);
     }
 
     public void sendMessage(String textToSend){

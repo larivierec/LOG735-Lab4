@@ -56,6 +56,12 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
                 String remoteHost = m.getData()[1];
                 Integer remotePort = Integer.parseInt(m.getData()[2]);
+
+                String[] dataToSend = new String[3];
+                dataToSend[0] = "ServerCoordinates";
+                dataToSend[1] = remoteHost;
+                dataToSend[2] = remotePort.toString();
+                ctx.writeAndFlush(dataToSend);
             }
         }
 
