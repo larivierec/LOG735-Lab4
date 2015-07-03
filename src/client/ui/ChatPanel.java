@@ -35,7 +35,6 @@ public class ChatPanel extends JPanel {
 
         mSendMessageButton.addActionListener(
                 new ActionListener(){
-                    @Override
                     public void actionPerformed(ActionEvent e) {
                         mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser().getCurrentRoom());
                     }
