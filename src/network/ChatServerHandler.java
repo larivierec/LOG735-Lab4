@@ -58,6 +58,12 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             notifyServers(m);
         }else if(commandID.equals("SynchronizationMessage")){
             System.out.println(m.getData()[1]);
+
+            m.getData()[0] = "PrivateMessage";
+            for(Channel channel : ChannelManager.getInstance().getClientChannelsMap()) {
+
+                channel.writeAndFlush(m);
+            }
             //TO-DO
             //notify the clients
         }else if(commandID.equals("Login")){
@@ -79,6 +85,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 toReturn[1] = m.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
+        }else if (commandID.equals("RequestServer")) {
+
+            ChannelManager.getInstance().addClientChannelsMap(ctx.channel());
         }
     }
 

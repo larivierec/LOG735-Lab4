@@ -113,12 +113,16 @@ public class MainFrame extends JFrame implements IObserver{
             if(command.equals("IncorrectAuthentication")){
                 JOptionPane.showMessageDialog(null, "Username or password is incorrect please try again.");
             }else if(command.equals("ServerCoordinates")){
+
                 ClientConnection tempConnect = new ClientConnection(localMessage.getData()[1], localMessage.getData()[2],mChatClientHandler);
                 this.setClientConnection(tempConnect);
+                mChatClientHandler.addObserver(mChatPanel);
                 tempConnect.startClient();
             }else if(command.equals("Authenticated")){
+
                 PersistantUser.getInstance().setLoggedInUser(localMessage);
                 mChatPanel.setClientConnection(mClientConnection);
+
                 getContentPane().removeAll();
                 getContentPane().add(mChatPanel);
                 revalidate();

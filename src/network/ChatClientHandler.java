@@ -46,6 +46,8 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
             notifyObservers(dataIncoming);
         }else if(commandID.equals("Authenticated")){
             notifyObservers(dataIncoming);
+        } else if(commandID.equals("PrivateMessage")) {
+            notifyObservers(dataIncoming);
         }
     }
 

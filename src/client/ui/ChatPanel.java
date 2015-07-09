@@ -1,16 +1,21 @@
 package client.ui;
 
+import client.model.ChatRoom;
 import client.model.ClientConnection;
 import client.model.PersistantUser;
+import interfaces.IObserver;
+import messages.Message;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Observable;
 
-public class ChatPanel extends JPanel {
+public class ChatPanel extends JPanel implements IObserver {
 
     private ClientConnection mClientConnection;
+    private ChatRoom chatRoom;
 
     private JLabel      mRoomLabel = new JLabel("Room List");
     private JScrollPane mRoomList = new JScrollPane();
@@ -37,6 +42,7 @@ public class ChatPanel extends JPanel {
                 new ActionListener(){
                     public void actionPerformed(ActionEvent e) {
                         mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser().getCurrentRoom());
+
                     }
                 }
         );
@@ -51,6 +57,22 @@ public class ChatPanel extends JPanel {
         this.add(mSendMessageButton);
         this.add(new JLabel());
         this.setVisible(true);
+    }
+
+    @Override
+    public void update(Observable e, Object t) {
+
+        if(t instanceof Message){
+
+            Message localMessage = (Message) t;
+            String command = localMessage.getData()[0];
+
+            if(command.equals("PrivateMessage")){
+
+                String userName = localMessage.getData()[1];
+
+            }
+        }
     }
 
     public void setClientConnection(ClientConnection c){
