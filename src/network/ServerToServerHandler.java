@@ -42,8 +42,6 @@ public class ServerToServerHandler extends ChannelHandlerAdapter {
 
         if(command.equals("IncomingMessage")){
 
-
-
             Iterator it = UserManager.getInstance().getLoggedInUsers().entrySet().iterator();
             User u = null;
             String room = "";
@@ -51,14 +49,16 @@ public class ServerToServerHandler extends ChannelHandlerAdapter {
             boolean firstpass = true;
             while (it.hasNext()) {
                 Map.Entry localPair = (Map.Entry)it.next();
-                if(((String)localPair.getValue()).equals(m.getData()[2]) || firstpass == true){
+                if(((String)localPair.getValue()).equals(m.getData()[2]) || firstpass){
                     firstpass = false;
                     pair = localPair;
                     room = (String)localPair.getValue();
                     u = (User) localPair.getKey();
                 }
                 if(room.equals(m.getData()[2])){
-                    //notify user
+                    for(ServerToServerConnection c : ChannelManager.getInstance().getServerToServerMap()){
+                        c.getChannel().writeAndFlush(m);
+                    }
                 }
             }
         }

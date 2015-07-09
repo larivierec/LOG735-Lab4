@@ -23,8 +23,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     private UserManager mUserManager = UserManager.getInstance();
     private LoginSystem mLoginSystem = new LoginSystem();
 
-    private ArrayList<ServerToServerConnection> mServerToServerMap = new ArrayList<ServerToServerConnection>();
-
     private Integer mListenPort;
     private String  mIPAddress;
 
@@ -50,11 +48,18 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
         String commandID = m.getData()[0];
         if(commandID.equals("AvailableServer")){
             String ipAddr = m.getData()[1];
-            Integer port = Integer.parseInt(m.getData()[2]);
-            if(mListenPort != port)
-                mServerToServerMap.add(new ServerToServerConnection(m.getData()[1], m.getData()[2]));
+            Integer incomingPort = Integer.parseInt(m.getData()[2]);
+            ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
         }else if(commandID.equals("IncomingMessage")){
+            m.getData()[0] = "SynchronizationMessage";
+            for(ServerToServerConnection conn : ChannelManager.getInstance().getServerToServerMap()){
+                conn.getChannel().writeAndFlush(m);
+            }
             notifyServers(m);
+        }else if(commandID.equals("SynchronizationMessage")){
+            System.out.println(m.getData()[1]);
+            //TO-DO
+            //notify the clients
         }else if(commandID.equals("Login")){
             String username = m.getData()[1];
             String hashedPW = m.getData()[2];
@@ -85,8 +90,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     }
 
     public void notifyServers(Message m){
-        for(ServerToServerConnection conn : mServerToServerMap){
-            conn.getChannel().writeAndFlush(m);
-        }
+        /**/
     }
 }

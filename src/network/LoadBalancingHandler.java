@@ -35,6 +35,17 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
             ChannelManager.getInstance().getPortMapping().put(addr.getPort(), Integer.parseInt(dataIncoming.getData()[2]));
             ChannelManager.getInstance().getServerUsage().put(dataIncoming ,0);
             ChannelManager.getInstance().getServerList().add(dataIncoming);
+
+
+            for(Channel c : ChannelManager.getInstance().getChannels()){
+                System.out.println("Writing data to other channels");
+                InetSocketAddress tempAddr = (InetSocketAddress)c.remoteAddress();
+                for(Message m : ChannelManager.getInstance().getServerList()){
+                    if(ChannelManager.getInstance().getPortMapping().get(tempAddr.getPort()) != Integer.parseInt(m.getData()[2])){
+                        c.writeAndFlush(m);
+                    }
+                }
+            }
         }
         else if(commandID.equals("RequestServer")){
             Iterator it = ChannelManager.getInstance().getServerUsage().entrySet().iterator();
@@ -44,7 +55,7 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
             boolean firstpass = true;
             while (it.hasNext()) {
                 Map.Entry localPair = (Map.Entry)it.next();
-                if((Integer)localPair.getValue() < usage || firstpass == true){
+                if((Integer)localPair.getValue() < usage || firstpass){
                     firstpass = false;
                     pair = localPair;
                     usage = (Integer)localPair.getValue();
@@ -62,16 +73,6 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
                 dataToSend[1] = remoteHost;
                 dataToSend[2] = remotePort.toString();
                 ctx.writeAndFlush(dataToSend);
-            }
-        }
-
-        for(Channel c : ChannelManager.getInstance().getChannels()){
-            System.out.println("Writing data to other channels");
-            InetSocketAddress tempAddr = (InetSocketAddress)c.remoteAddress();
-            for(Message m : ChannelManager.getInstance().getServerList()){
-                if(ChannelManager.getInstance().getPortMapping().get(tempAddr.getPort()) != Integer.parseInt(m.getData()[2])){
-                    c.writeAndFlush(m);
-                }
             }
         }
     }

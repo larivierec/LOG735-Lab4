@@ -11,10 +11,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatClientHandler;
-import network.RelayHandler;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
 
 public class ClientConnection {
@@ -74,7 +71,7 @@ public class ClientConnection {
     }
 
     public void sendMessage(String textToSend, String roomID){
-        String[] arrayToSend = new String[3];
+        String[] arrayToSend = new String[10];
         arrayToSend[0] = "IncomingMessage";
         arrayToSend[1] = textToSend;
         arrayToSend[2] = roomID;

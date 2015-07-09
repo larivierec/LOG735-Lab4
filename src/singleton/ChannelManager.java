@@ -5,6 +5,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
+import network.ServerToServerConnection;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ public class ChannelManager {
     private static ChannelManager instance;
     private final ChannelGroup mChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private List<Message> mServerList = new ArrayList<Message>();
+    private List<ServerToServerConnection> mServerToServerMap = new ArrayList<ServerToServerConnection>();
+
     private HashMap<Message, Integer> mServerUsage = new HashMap<Message, Integer>();
     private HashMap<Integer, Integer> mPortMapping = new HashMap<Integer, Integer>();
     private ChannelManager(){}
@@ -46,6 +49,16 @@ public class ChannelManager {
 
     public HashMap<Integer,Integer> getPortMapping(){
         return mPortMapping;
+    }
+
+    public void addServerToServer(ServerToServerConnection s){
+        if(!this.mServerToServerMap.contains(s)){
+            this.mServerToServerMap.add(s);
+        }
+    }
+
+    public List<ServerToServerConnection> getServerToServerMap(){
+        return this.mServerToServerMap;
     }
 
 }

@@ -61,4 +61,20 @@ public class ServerToServerConnection {
     public Channel getChannel(){
         return this.mServerToServerChannel.channel();
     }
+
+    public String getRemotePort() {
+        return mRemotePort;
+    }
+
+    public void setRemotePort(String mRemotePort) {
+        this.mRemotePort = mRemotePort;
+    }
+
+    public String getRemoteAddress() {
+        return mRemoteAddress;
+    }
+
+    public void setRemoteAddress(String mRemoteAddress) {
+        this.mRemoteAddress = mRemoteAddress;
+    }
 }
