@@ -1,20 +1,18 @@
 package client.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ChatRoom  {
 
     private String name;
     private String password;
+    private Message[] chatRoomMessages = new Message[20];
 
-    public ChatRoom(String name, String password, List<Message> messages) {
+    public ChatRoom(String name, String password, Message[] messages) {
         this.name = name;
         this.password = password;
+        this.chatRoomMessages = messages;
     }
 
     public ChatRoom(String password, String name) {
-
         this.password = password;
         this.name = name;
     }
@@ -33,6 +31,14 @@ public class ChatRoom  {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Message[] getRoomHistory(){
+        return this.chatRoomMessages;
+    }
+
+    public void setRoomHistory(Message[] m){
+        this.chatRoomMessages = m;
     }
 
 }

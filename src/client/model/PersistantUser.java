@@ -20,10 +20,10 @@ public class PersistantUser {
     }
 
     public void setLoggedInUser(Message t){
-        Integer id = Integer.parseInt(t.getData()[1]);
-        String user = t.getData()[2];
-        String pw = t.getData()[3];
-        String roomID = t.getData()[4];
+        Integer id = (Integer)t.getData()[1];
+        String user = (String)t.getData()[2];
+        String pw = (String)t.getData()[3];
+        String roomID = (String)t.getData()[4];
 
         mLoggedInUser = new User(id, user, pw, roomID);
     }

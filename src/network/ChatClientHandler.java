@@ -34,19 +34,19 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message dataIncoming = mChatProtocol.parseProtocolData(msg);
-        String commandID = dataIncoming.getData()[0];
+        String commandID = (String)dataIncoming.getData()[0];
 
         if(commandID.equals("ServerCoordinates")){
             //close the connection established with the load balancer
             ctx.close();
-            String ip = dataIncoming.getData()[1];
-            Integer port = Integer.parseInt(dataIncoming.getData()[2]);
+            String ip = (String)dataIncoming.getData()[1];
+            Integer port = Integer.parseInt((String)dataIncoming.getData()[2]);
             notifyObservers(dataIncoming);
         }else if(commandID.equals("IncorrectAuthentication")){
             notifyObservers(dataIncoming);
         }else if(commandID.equals("Authenticated")){
             notifyObservers(dataIncoming);
-        } else if(commandID.equals("PrivateMessage")) {
+        }else if(commandID.equals("PrivateMessage")) {
             notifyObservers(dataIncoming);
         }
     }

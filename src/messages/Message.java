@@ -3,21 +3,17 @@ package messages;
 import java.io.Serializable;
 
 public class Message implements Serializable {
-    private String[] mData;
+    private Object[] mData;
 
     public Message(){
 
     }
 
-    public Message(String[] dataToTokenize){
+    public Message(Object[] dataToTokenize){
         this.mData = dataToTokenize;
     }
 
-    public String[] getData() {
+    public Object[] getData() {
         return mData;
-    }
-
-    public void addElement(String data){
-        this.mData[this.mData.length] = data;
     }
 }

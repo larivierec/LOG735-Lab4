@@ -60,7 +60,7 @@ public class ChannelManager {
         }
     }
 
-    public List<Channel> getClientChannelsMap() {
+    public List<Channel> getClientChannels() {
         return mClientChannelsMap;
     }
 

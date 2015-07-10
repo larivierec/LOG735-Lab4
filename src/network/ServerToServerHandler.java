@@ -38,7 +38,7 @@ public class ServerToServerHandler extends ChannelHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message m = mChatProtocol.parseProtocolData(msg);
-        String command = m.getData()[0];
+        String command = (String)m.getData()[0];
 
         if(command.equals("IncomingMessage")){
 

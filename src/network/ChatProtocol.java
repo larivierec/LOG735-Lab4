@@ -13,6 +13,6 @@ public class ChatProtocol extends Protocol {
         if(msg instanceof Message){
             return (Message) msg;
         }
-        return new Message((String[]) msg);
+        return new Message((Object[]) msg);
     }
 }

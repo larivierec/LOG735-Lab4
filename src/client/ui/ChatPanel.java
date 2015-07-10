@@ -65,12 +65,10 @@ public class ChatPanel extends JPanel implements IObserver {
         if(t instanceof Message){
 
             Message localMessage = (Message) t;
-            String command = localMessage.getData()[0];
+            String command = (String)localMessage.getData()[0];
 
             if(command.equals("PrivateMessage")){
-
-                String userName = localMessage.getData()[1];
-
+                String userName = (String)localMessage.getData()[1];
             }
         }
     }

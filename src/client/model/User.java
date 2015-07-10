@@ -1,11 +1,14 @@
 package client.model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable{
 
     private Integer mUserID;
     private String mUsername;
     private String mHashedPassword;
     private String mCurrentRoom;
+
 
     public User(int userID, String user, String pass){
         this.mUsername = user;
@@ -50,10 +53,5 @@ public class User {
 
     public void setCurrentRoom(String mCurrentRoom) {
         this.mCurrentRoom = mCurrentRoom;
-    }
-
-    @Override
-    public String toString(){
-        return "User ID: " +getUserID() + " User name: "+ getUsername() + " Hashed password: " + getHashedPassword();
     }
 }

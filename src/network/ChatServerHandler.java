@@ -10,10 +10,6 @@ import messages.Message;
 import singleton.ChannelManager;
 import singleton.UserManager;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
 
@@ -45,10 +41,10 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message m = mChatProtocol.parseProtocolData(msg);
-        String commandID = m.getData()[0];
+        String commandID = (String)m.getData()[0];
         if(commandID.equals("AvailableServer")){
-            String ipAddr = m.getData()[1];
-            Integer incomingPort = Integer.parseInt(m.getData()[2]);
+            String ipAddr = (String)m.getData()[1];
+            Integer incomingPort = Integer.parseInt((String)m.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
         }else if(commandID.equals("IncomingMessage")){
             m.getData()[0] = "SynchronizationMessage";
@@ -58,36 +54,27 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             notifyServers(m);
         }else if(commandID.equals("SynchronizationMessage")){
             System.out.println(m.getData()[1]);
-
-            m.getData()[0] = "PrivateMessage";
-            for(Channel channel : ChannelManager.getInstance().getClientChannelsMap()) {
-
-                channel.writeAndFlush(m);
-            }
-            //TO-DO
-            //notify the clients
+            ChannelManager.getInstance().getClientChannels();
         }else if(commandID.equals("Login")){
-            String username = m.getData()[1];
-            String hashedPW = m.getData()[2];
-            String roomID = m.getData()[3];
+            String username = (String)m.getData()[1];
+            String hashedPW = (String)m.getData()[2];
+            String roomID = (String)m.getData()[3];
 
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
 
             if(temp != null) {
+                temp.setCurrentRoom(roomID);
                 mUserManager.addUser(temp, roomID);
 
-                String[] array = {"Authenticated", String.valueOf(temp.getUserID()), temp.getUsername(), temp.getHashedPassword(), roomID};
+                Object[] array = {"Authenticated", temp};
                 ctx.writeAndFlush(array);
             }
             else{
                 String[] toReturn = new String[2];
                 toReturn[0] = "IncorrectAuthentication";
-                toReturn[1] = m.getData()[2];
+                toReturn[1] = (String) m.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
-        }else if (commandID.equals("RequestServer")) {
-
-            ChannelManager.getInstance().addClientChannelsMap(ctx.channel());
         }
     }
 

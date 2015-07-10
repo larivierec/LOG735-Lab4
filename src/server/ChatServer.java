@@ -33,10 +33,6 @@ public class ChatServer implements IServer{
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber);
-        /**
-         *   to get remote ip address use: InetSocketAddres addr = (InetSocketAddress) ctx.channel().remoteAddress();
-         *   addr.getSocketAddress().getHostAddress();
-         */
 
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -94,8 +90,7 @@ public class ChatServer implements IServer{
         }
     }
 
-    @Override
     public void update(Observable e, Object t) {
-        System.out.println(t);
+
     }
 }
