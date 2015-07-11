@@ -33,9 +33,8 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
             ChannelManager.getInstance().addChannel(ctx);
             dataIncoming.getData()[0] = "AvailableServer";
             ChannelManager.getInstance().getPortMapping().put(addr.getPort(), Integer.parseInt((String)dataIncoming.getData()[2]));
-            ChannelManager.getInstance().getServerUsage().put(dataIncoming ,0);
+            ChannelManager.getInstance().getServerUsage().put(dataIncoming, 0);
             ChannelManager.getInstance().getServerList().add(dataIncoming);
-
 
             for(Channel c : ChannelManager.getInstance().getChannels()){
                 System.out.println("Writing data to other channels");

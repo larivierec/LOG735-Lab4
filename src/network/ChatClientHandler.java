@@ -48,6 +48,10 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
             notifyObservers(dataIncoming);
         }else if(commandID.equals("PrivateMessage")) {
             notifyObservers(dataIncoming);
+        }else if(commandID.equals("LobbyMessage")){
+            notifyObservers(dataIncoming);
+        }else if(commandID.equals("RoomUserList")){
+            notifyObservers(dataIncoming);
         }
     }
 

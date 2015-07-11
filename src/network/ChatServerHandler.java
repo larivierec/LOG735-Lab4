@@ -13,6 +13,8 @@ import singleton.ChatRoomManager;
 import singleton.UserManager;
 import util.Utilities;
 
+import java.io.Serializable;
+
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
 
@@ -53,12 +55,18 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             String ipAddr = (String)m.getData()[1];
             Integer incomingPort = Integer.parseInt((String)m.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
+
+            Object[] roomInfo = new Object[10];
+            roomInfo[0] = "ServerRoomInfo";
+            roomInfo[1] = ChatRoomManager.getInstance().getChatRoomList();
+
         }else if(commandID.equals("IncomingMessage")){
             m.getData()[0] = "SynchronizationMessage";
+
             writeToAllServers(m.getData());
         }else if(commandID.equals("SynchronizationMessage")){
             System.out.println(m.getData()[1]);
-            ChannelManager.getInstance().getClientChannels();
+            //ChannelManager.getInstance().getClientChannels();
         }else if(commandID.equals("Login")){
             String username = (String)m.getData()[1];
             String hashedPW = (String)m.getData()[2];
@@ -67,10 +75,28 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
             if(temp != null && theSelectedRoom != null) {
-                mUserManager.addUser(temp);
+                if(!mUserManager.getLoggedInUsers().contains(temp)) {
+                    mUserManager.addUser(temp);
+                    theSelectedRoom.addConectedUser(temp);
 
-                Object[] array = {"Authenticated", temp};
-                ctx.writeAndFlush(array);
+                    Object[] array = {"Authenticated", temp};
+                    ctx.writeAndFlush(array);
+
+                    Object[] chatRoomUserList = {"RoomUserList", theSelectedRoom};
+                    Message chatRoomUserListSend = new Message(chatRoomUserList);
+
+                    ctx.writeAndFlush(chatRoomUserListSend);
+                    writeToAllClients(chatRoomUserListSend);
+
+
+                    //TODO: Find a way to serialize the list... this is the reason its not being sent over the network
+                    
+                    Object[] roomList = {"RoomList", mChatRoomManager.getChatRoomList()};
+                    Message roomListSend = new Message(roomList);
+
+                    ctx.writeAndFlush(roomListSend);
+                    writeToAllClients(roomListSend);
+                }
             }
             else{
                 String[] toReturn = new String[2];

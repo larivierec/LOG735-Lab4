@@ -1,5 +1,6 @@
 package server;
 
+import client.model.ChatRoom;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -13,6 +14,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
+import singleton.ChatRoomManager;
 
 import java.util.Observable;
 
@@ -26,6 +28,7 @@ public class ChatServer implements IServer{
         this.mIPAddress = ipAddr;
         this.mListenPortNumber = portNumber;
         this.mConnectionPortNumber = connectionPort;
+        ChatRoomManager.getInstance().registerChatRoom(new ChatRoom("Lobby"));
     }
 
     @Override

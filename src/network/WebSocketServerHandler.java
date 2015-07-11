@@ -55,7 +55,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object>{
         if ("/".equals(req.uri())) {
 
             /**
-             * TO-DO: SCRAP CA. ALL COMMENTED
+             * TODO: SCRAP CA. ALL COMMENTED
              */
 
             //ByteBuf content = WebSocketServerIndexPage.getContent(getWebSocketLocation(req));

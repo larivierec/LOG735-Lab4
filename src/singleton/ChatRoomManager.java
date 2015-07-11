@@ -4,15 +4,15 @@ import client.model.ChatRoom;
 import client.model.User;
 import messages.Message;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 public class ChatRoomManager {
 
     private static ChatRoomManager mChatRoomManagerInstance = null;
-    private List<ChatRoom> mChatRoomList = new ArrayList<ChatRoom>();
-    private HashMap<User, ChatRoom> mUserChatRoomMap = new HashMap<User,ChatRoom>();
+    private Vector<ChatRoom> mChatRoomList = new Vector<>();
+    private HashMap<User, ChatRoom> mUserChatRoomMap = new HashMap<>();
 
     private ChatRoomManager(){}
 
@@ -23,7 +23,7 @@ public class ChatRoomManager {
         return mChatRoomManagerInstance;
     }
 
-    public void addChatRoom(ChatRoom c){
+    public void registerChatRoom(ChatRoom c){
         if(!mChatRoomList.contains(c)){
             mChatRoomList.add(c);
         }
@@ -56,5 +56,9 @@ public class ChatRoomManager {
                 chatRoom.addMessage(t);
             }
         });
+    }
+
+    public List<ChatRoom> getChatRoomList(){
+        return this.mChatRoomList;
     }
 }

@@ -2,15 +2,20 @@ package client.model;
 
 import messages.Message;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChatRoom  {
+public class ChatRoom implements Serializable{
 
     private String name;
     private String password;
     private List<User> mConnectedUsers = new ArrayList<User>();
     private List<Message> mChatRoomMessages = new ArrayList<Message>();
+
+    public ChatRoom(String roomName){
+        this.name = roomName;
+    }
 
     public ChatRoom(String name, String password) {
         this.name = name;
