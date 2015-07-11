@@ -7,8 +7,6 @@ public class User implements Serializable{
     private Integer mUserID;
     private String mUsername;
     private String mHashedPassword;
-    private String mCurrentRoom;
-
 
     public User(int userID, String user, String pass){
         this.mUsername = user;
@@ -16,11 +14,10 @@ public class User implements Serializable{
         this.mUserID = userID;
     }
 
-    public User(Integer id, String user, String pw, String roomID) {
+    public User(Integer id, String user, String pw) {
         this.mUsername = user;
         this.mHashedPassword = pw;
         this.mUserID = id;
-        this.mCurrentRoom = roomID;
     }
 
     public void setUsername(String mUsername) {
@@ -45,13 +42,5 @@ public class User implements Serializable{
 
     public String getUsername() {
         return mUsername;
-    }
-
-    public String getCurrentRoom() {
-        return mCurrentRoom;
-    }
-
-    public void setCurrentRoom(String mCurrentRoom) {
-        this.mCurrentRoom = mCurrentRoom;
     }
 }

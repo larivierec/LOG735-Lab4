@@ -1,20 +1,20 @@
 package client.model;
 
+import messages.Message;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ChatRoom  {
 
     private String name;
     private String password;
-    private Message[] chatRoomMessages = new Message[20];
+    private List<User> mConnectedUsers = new ArrayList<User>();
+    private List<Message> mChatRoomMessages = new ArrayList<Message>();
 
-    public ChatRoom(String name, String password, Message[] messages) {
+    public ChatRoom(String name, String password) {
         this.name = name;
         this.password = password;
-        this.chatRoomMessages = messages;
-    }
-
-    public ChatRoom(String password, String name) {
-        this.password = password;
-        this.name = name;
     }
 
     public String getName() {
@@ -33,12 +33,21 @@ public class ChatRoom  {
         this.password = password;
     }
 
-    public Message[] getRoomHistory(){
-        return this.chatRoomMessages;
+    public List<Message> getRoomHistory(){
+        return this.mChatRoomMessages;
     }
 
-    public void setRoomHistory(Message[] m){
-        this.chatRoomMessages = m;
+    public List<User> getConnectedUsers(){
+        return this.mConnectedUsers;
     }
 
+    public void addConectedUser(User c){
+        if(!mConnectedUsers.contains(c)){
+            this.mConnectedUsers.add(c);
+        }
+    }
+
+    public void addMessage(Message t){
+        this.mChatRoomMessages.add(t);
+    }
 }

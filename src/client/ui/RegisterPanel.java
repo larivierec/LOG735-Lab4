@@ -25,7 +25,9 @@ public class RegisterPanel extends JPanel{
         mPasswordLabel.setBounds(new Rectangle(100, 280, 200, 30));
 
         mButtonSubmit.setBounds(new Rectangle(350, 320, 150, 30));
-        mButtonSubmit.addActionListener(new RegisterAction(mUsernameBox, mPasswordBox, this));
+        mButtonSubmit.addActionListener(e -> {
+            new RegisterAction(mUsernameBox, mPasswordBox, this);
+        });
 
         this.add(mUsernameLabel);
         this.add(mPasswordBox);

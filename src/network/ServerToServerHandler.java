@@ -42,7 +42,7 @@ public class ServerToServerHandler extends ChannelHandlerAdapter {
 
         if(command.equals("IncomingMessage")){
 
-            Iterator it = UserManager.getInstance().getLoggedInUsers().entrySet().iterator();
+            /*Iterator it = UserManager.getInstance().getLoggedInUsers().entrySet().iterator();
             User u = null;
             String room = "";
             Map.Entry pair = null;
@@ -60,7 +60,7 @@ public class ServerToServerHandler extends ChannelHandlerAdapter {
                         c.getChannel().writeAndFlush(m);
                     }
                 }
-            }
+            }*/
         }
     }
 

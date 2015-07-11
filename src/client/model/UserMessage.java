@@ -3,7 +3,7 @@ package client.model;
 import java.util.Date;
 
 
-public class Message {
+public class UserMessage {
 
     private String text;
     private String username;

@@ -18,6 +18,8 @@ public class MainFrame extends JFrame implements IObserver{
 
     private RegisterPanel mRegistrationPanel = new RegisterPanel();
     private ChatPanel     mChatPanel;
+
+    private PersistantUser mLoggedInUser;
     private JPanel mLoginRegistrationPanel = new JPanel();
 
     private JLabel mUsernameLabel = new JLabel("Username:");
@@ -56,22 +58,16 @@ public class MainFrame extends JFrame implements IObserver{
         mButtonLogin.setBounds(new Rectangle(100, 260, 150, 30));
         mButtonRegister.setBounds(new Rectangle(300, 260, 150, 30));
 
-        mButtonRegister.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                getContentPane().removeAll();
-                getContentPane().add(mRegistrationPanel);
-                revalidate();
-                repaint();
-            }
+        mButtonRegister.addActionListener(e -> {
+            getContentPane().removeAll();
+            getContentPane().add(mRegistrationPanel);
+            revalidate();
+            repaint();
         });
 
-        mButtonLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] array = {"Login", mUsernameBox.getText(), Utilities.sha256(mPasswordBox.getPassword()), mVirtualChatBox.getText()};
-                mClientConnection.sendLoginRequest(array);
-            }
+        mButtonLogin.addActionListener(e -> {
+            String[] array = {"Login", mUsernameBox.getText(), Utilities.sha256(mPasswordBox.getPassword()), mVirtualChatBox.getText()};
+            mClientConnection.sendLoginRequest(array);
         });
 
         mLoginRegistrationPanel.add(mUsernameLabel);
@@ -114,13 +110,12 @@ public class MainFrame extends JFrame implements IObserver{
             if(command.equals("IncorrectAuthentication")){
                 JOptionPane.showMessageDialog(null, "Username or password is incorrect please try again.");
             }else if(command.equals("ServerCoordinates")){
-
                 ClientConnection tempConnect = new ClientConnection((String)localMessage.getData()[1], (String)localMessage.getData()[2],mChatClientHandler);
                 this.setClientConnection(tempConnect);
+
                 mChatClientHandler.addObserver(mChatPanel);
                 tempConnect.startClient();
             }else if(command.equals("Authenticated")){
-
                 User loggedIn = (User) localMessage.getData()[1];
                 PersistantUser.getInstance().setLoggedInUser(loggedIn);
                 mChatPanel.setClientConnection(mClientConnection);

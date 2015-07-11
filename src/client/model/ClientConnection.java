@@ -70,11 +70,11 @@ public class ClientConnection {
         this.mFutureChannel.channel().writeAndFlush(arrayToSend);
     }
 
-    public void sendMessage(String textToSend, String roomID){
-        String[] arrayToSend = new String[10];
+    public void sendMessage(String textToSend){
+        Object[] arrayToSend = new Object[10];
         arrayToSend[0] = "IncomingMessage";
         arrayToSend[1] = textToSend;
-        arrayToSend[2] = roomID;
+        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
         if(mFutureChannel != null){
             mFutureChannel.channel().writeAndFlush(arrayToSend);
         }

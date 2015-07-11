@@ -1,5 +1,6 @@
 package network;
 
+import client.model.ChatRoom;
 import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
@@ -8,7 +9,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
 import singleton.ChannelManager;
+import singleton.ChatRoomManager;
 import singleton.UserManager;
+import util.Utilities;
 
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
@@ -16,6 +19,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private ChatProtocol mChatProtocol = new ChatProtocol();
 
+    private ChatRoomManager mChatRoomManager = ChatRoomManager.getInstance();
     private UserManager mUserManager = UserManager.getInstance();
     private LoginSystem mLoginSystem = new LoginSystem();
 
@@ -42,16 +46,16 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message m = mChatProtocol.parseProtocolData(msg);
         String commandID = (String)m.getData()[0];
+
+
+
         if(commandID.equals("AvailableServer")){
             String ipAddr = (String)m.getData()[1];
             Integer incomingPort = Integer.parseInt((String)m.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
         }else if(commandID.equals("IncomingMessage")){
             m.getData()[0] = "SynchronizationMessage";
-            for(ServerToServerConnection conn : ChannelManager.getInstance().getServerToServerMap()){
-                conn.getChannel().writeAndFlush(m);
-            }
-            notifyServers(m);
+            writeToAllServers(m.getData());
         }else if(commandID.equals("SynchronizationMessage")){
             System.out.println(m.getData()[1]);
             ChannelManager.getInstance().getClientChannels();
@@ -61,10 +65,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             String roomID = (String)m.getData()[3];
 
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
-
-            if(temp != null) {
-                temp.setCurrentRoom(roomID);
-                mUserManager.addUser(temp, roomID);
+            ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
+            if(temp != null && theSelectedRoom != null) {
+                mUserManager.addUser(temp);
 
                 Object[] array = {"Authenticated", temp};
                 ctx.writeAndFlush(array);
@@ -75,6 +78,25 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 toReturn[1] = (String) m.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
+        }else if(commandID.equals("CreateChatRoom")){
+            //create the new chatroom and add it to the list of chatroom manager
+            /**
+             * Arg 1 - Name: roomname
+             * Arg 2 - Password: password for room
+             * Arg 3 - User: the user automatically switches to the chat room
+             */
+
+            String chatRoomName = (String)m.getData()[1];
+            String chatRoomPW = (String)m.getData()[2];
+            User requestingUser = (User)m.getData()[3];
+
+            ChatRoom chatRoom  = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
+            ChatRoomManager.getInstance().changeRoom(requestingUser,chatRoom);
+        }else if(commandID.equals("SwitchRoom")){
+            /**
+             * Arg 1 - User object
+             * Arg 2 - The room to switch to.
+             */
         }
     }
 
@@ -85,7 +107,13 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
         System.out.println(cause.getMessage());
     }
 
-    public void notifyServers(Message m){
-        /**/
+    private void writeToAllServers(Object[] data){
+        for(ServerToServerConnection conn : ChannelManager.getInstance().getServerToServerMap()){
+            conn.getChannel().writeAndFlush(data);
+        }
+    }
+
+    private void writeToAllClients(Message m){
+
     }
 }

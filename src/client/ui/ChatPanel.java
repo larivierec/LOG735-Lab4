@@ -38,13 +38,9 @@ public class ChatPanel extends JPanel implements IObserver {
         mTextArea.setBounds(new Rectangle(290, 400, 250, 100));
         mSendMessageButton.setBounds(new Rectangle(550,500,100,30));
 
-        mSendMessageButton.addActionListener(
-                new ActionListener(){
-                    public void actionPerformed(ActionEvent e) {
-                        mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser().getCurrentRoom());
-
-                    }
-                }
+        mSendMessageButton.addActionListener(e -> {
+                mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser());
+            }
         );
 
         this.add(mRoomLabel);
