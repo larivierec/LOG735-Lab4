@@ -39,7 +39,7 @@ public class ChatPanel extends JPanel implements IObserver {
         mSendMessageButton.setBounds(new Rectangle(550,500,100,30));
 
         mSendMessageButton.addActionListener(e -> {
-                mClientConnection.sendMessage(mTextArea.getText(), PersistantUser.getInstance().getLoggedInUser());
+                mClientConnection.sendMessage(mTextArea.getText());
             }
         );
 
