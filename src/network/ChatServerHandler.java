@@ -46,14 +46,12 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        Message m = mChatProtocol.parseProtocolData(msg);
-        String commandID = (String)m.getData()[0];
-
-
+        Message incomingData = mChatProtocol.parseProtocolData(msg);
+        String commandID = (String)incomingData.getData()[0];
 
         if(commandID.equals("AvailableServer")){
-            String ipAddr = (String)m.getData()[1];
-            Integer incomingPort = Integer.parseInt((String)m.getData()[2]);
+            String ipAddr = (String)incomingData.getData()[1];
+            Integer incomingPort = Integer.parseInt((String)incomingData.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
 
             Object[] roomInfo = new Object[10];
@@ -61,16 +59,21 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             roomInfo[1] = ChatRoomManager.getInstance().getChatRoomList();
 
         }else if(commandID.equals("IncomingMessage")){
-            m.getData()[0] = "SynchronizationMessage";
-
-            writeToAllServers(m.getData());
+            User messageSender = (User) incomingData.getData()[2];
+            ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
+            // if its null it means the message is a private message.
+            if(incomingData.getData()[2] != null && room != null) {
+                room.addMessage(incomingData);
+                incomingData.getData()[0] = "SynchronizationMessage";
+                writeToAllServers(incomingData.getData());
+            }
         }else if(commandID.equals("SynchronizationMessage")){
-            System.out.println(m.getData()[1]);
+            System.out.println(incomingData.getData()[1]);
             //ChannelManager.getInstance().getClientChannels();
         }else if(commandID.equals("Login")){
-            String username = (String)m.getData()[1];
-            String hashedPW = (String)m.getData()[2];
-            String roomID = (String)m.getData()[3];
+            String username = (String)incomingData.getData()[1];
+            String hashedPW = (String)incomingData.getData()[2];
+            String roomID = (String)incomingData.getData()[3];
 
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
@@ -78,6 +81,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 if(!mUserManager.getLoggedInUsers().contains(temp)) {
                     mUserManager.addUser(temp);
                     theSelectedRoom.addConectedUser(temp);
+
+                    ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom);
 
                     Object[] array = {"Authenticated", temp};
                     ctx.writeAndFlush(array);
@@ -101,7 +106,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             else{
                 String[] toReturn = new String[2];
                 toReturn[0] = "IncorrectAuthentication";
-                toReturn[1] = (String) m.getData()[2];
+                toReturn[1] = (String) incomingData.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
         }else if(commandID.equals("CreateChatRoom")){
@@ -112,9 +117,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
              * Arg 3 - User: the user automatically switches to the chat room
              */
 
-            String chatRoomName = (String)m.getData()[1];
-            String chatRoomPW = (String)m.getData()[2];
-            User requestingUser = (User)m.getData()[3];
+            String chatRoomName = (String)incomingData.getData()[1];
+            String chatRoomPW = (String)incomingData.getData()[2];
+            User requestingUser = (User)incomingData.getData()[3];
 
             ChatRoom chatRoom  = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
             ChatRoomManager.getInstance().changeRoom(requestingUser,chatRoom);

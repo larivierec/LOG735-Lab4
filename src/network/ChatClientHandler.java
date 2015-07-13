@@ -52,6 +52,9 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
             notifyObservers(dataIncoming);
         }else if(commandID.equals("RoomUserList")){
             notifyObservers(dataIncoming);
+        }else{
+            //TODO: find a way to make this notify better...
+            notifyObservers(dataIncoming);
         }
     }
 

@@ -3,15 +3,15 @@ package singleton;
 import client.model.ChatRoom;
 import client.model.User;
 import messages.Message;
+import wrappers.ChatRoomListWrapper;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 
 public class ChatRoomManager {
 
     private static ChatRoomManager mChatRoomManagerInstance = null;
-    private Vector<ChatRoom> mChatRoomList = new Vector<>();
+    private ChatRoomListWrapper mChatRoomList = new ChatRoomListWrapper();
     private HashMap<User, ChatRoom> mUserChatRoomMap = new HashMap<>();
 
     private ChatRoomManager(){}
@@ -24,19 +24,19 @@ public class ChatRoomManager {
     }
 
     public void registerChatRoom(ChatRoom c){
-        if(!mChatRoomList.contains(c)){
-            mChatRoomList.add(c);
+        if(!mChatRoomList.getChatRoomList().contains(c)){
+            mChatRoomList.getChatRoomList().add(c);
         }
     }
 
     public void removeChatRoom(ChatRoom c){
-        if(mChatRoomList.contains(c)){
-            mChatRoomList.remove(c);
+        if(mChatRoomList.getChatRoomList().contains(c)){
+            mChatRoomList.getChatRoomList().remove(c);
         }
     }
 
     public ChatRoom getChatRoom(String roomName){
-        for(ChatRoom chat : mChatRoomList){
+        for(ChatRoom chat : mChatRoomList.getChatRoomList()){
             if(chat.getName().equals(roomName)){
                 return chat;
             }
@@ -44,14 +44,19 @@ public class ChatRoomManager {
         return null;
     }
 
-        public void changeRoom(User e, ChatRoom room){
+    public ChatRoom getChatRoomAssociatedToUser(User e){
         if(mUserChatRoomMap.containsKey(e)){
-            mUserChatRoomMap.put(e,room);
+            return mUserChatRoomMap.get(e);
         }
+        return null;
+    }
+
+    public void changeRoom(User e, ChatRoom room){
+        mUserChatRoomMap.put(e, room);
     }
 
     public void addMessageToChatRoom(String chatRoomID, Message t){
-        mChatRoomList.forEach(chatRoom -> {
+        mChatRoomList.getChatRoomList().forEach(chatRoom -> {
             if(chatRoom.getName().equals(chatRoomID)){
                 chatRoom.addMessage(t);
             }
@@ -59,6 +64,6 @@ public class ChatRoomManager {
     }
 
     public List<ChatRoom> getChatRoomList(){
-        return this.mChatRoomList;
+        return this.mChatRoomList.getChatRoomList();
     }
 }
