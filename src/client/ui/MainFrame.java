@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.model.ChatRoom;
 import client.model.ClientConnection;
 import client.model.PersistantUser;
 import client.model.User;
@@ -117,7 +118,9 @@ public class MainFrame extends JFrame implements IObserver{
                 tempConnect.startClient();
             }else if(command.equals("Authenticated")){
                 User loggedIn = (User) localMessage.getData()[1];
+                ChatRoom theChatRoom = (ChatRoom) localMessage.getData()[2];
                 PersistantUser.getInstance().setLoggedInUser(loggedIn);
+                PersistantUser.getInstance().setChatRoom(theChatRoom);
                 mChatPanel.setClientConnection(mClientConnection);
 
                 getContentPane().removeAll();

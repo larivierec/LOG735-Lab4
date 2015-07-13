@@ -75,6 +75,7 @@ public class ClientConnection {
         arrayToSend[0] = "IncomingMessage";
         arrayToSend[1] = textToSend;
         arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[3] = PersistantUser.getInstance().getChatRoom();
         if(mFutureChannel != null){
             mFutureChannel.channel().writeAndFlush(arrayToSend);
         }

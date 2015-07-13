@@ -90,7 +90,7 @@ public class ChatPanel extends JPanel implements IObserver {
                 mRoomList.invalidate();
                 mRoomList.repaint();
             }else if(command.equals("LobbyMessage")){
-
+                System.out.println(localMessage.getData()[1].toString());
             }
         }
     }

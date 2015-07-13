@@ -61,15 +61,22 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
         }else if(commandID.equals("IncomingMessage")){
             User messageSender = (User) incomingData.getData()[2];
             ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
-            // if its null it means the message is a private message.
+
+            if(incomingData.getData()[3] != null){
+                incomingData.getData()[0] = "PrivateMessage";
+            }
+
+            //if any of these are null there was a problem sending the data
             if(incomingData.getData()[2] != null && room != null) {
                 room.addMessage(incomingData);
-                incomingData.getData()[0] = "SynchronizationMessage";
+                incomingData.getData()[0] = "LobbyMessage";
                 writeToAllServers(incomingData.getData());
             }
-        }else if(commandID.equals("SynchronizationMessage")){
+        }else if(commandID.equals("LobbyMessage")){
             System.out.println(incomingData.getData()[1]);
-            //ChannelManager.getInstance().getClientChannels();
+            //TODO this must check if the
+            writeToAllClients(incomingData);
+
         }else if(commandID.equals("Login")){
             String username = (String)incomingData.getData()[1];
             String hashedPW = (String)incomingData.getData()[2];
@@ -84,7 +91,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom);
 
-                    Object[] array = {"Authenticated", temp};
+                    Object[] array = {"Authenticated", temp, theSelectedRoom};
                     ctx.writeAndFlush(array);
 
                     Object[] chatRoomUserList = {"RoomUserList", theSelectedRoom};
@@ -93,9 +100,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                     ctx.writeAndFlush(chatRoomUserListSend);
                     writeToAllClients(chatRoomUserListSend);
 
-
-                    //TODO: Find a way to serialize the list... this is the reason its not being sent over the network
-                    
                     Object[] roomList = {"RoomList", mChatRoomManager.getChatRoomList()};
                     Message roomListSend = new Message(roomList);
 
@@ -124,6 +128,12 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             ChatRoom chatRoom  = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
             ChatRoomManager.getInstance().changeRoom(requestingUser,chatRoom);
         }else if(commandID.equals("SwitchRoom")){
+
+            User userToSwitch = (User) incomingData.getData()[1];
+            ChatRoom roomToSwitch = (ChatRoom) incomingData.getData()[2];
+
+            ChatRoomManager.getInstance().changeRoom(userToSwitch, roomToSwitch);
+
             /**
              * Arg 1 - User object
              * Arg 2 - The room to switch to.
@@ -145,6 +155,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     }
 
     private void writeToAllClients(Message m){
-
+        //TODO need to try to get a list of all clients connected to the server
     }
 }

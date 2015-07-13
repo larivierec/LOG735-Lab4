@@ -4,6 +4,7 @@ public class PersistantUser {
 
     private static PersistantUser mInstance = null;
     private User    mLoggedInUser;
+    private ChatRoom mCurrentChatRoom;
 
     private PersistantUser(){}
 
@@ -19,5 +20,13 @@ public class PersistantUser {
 
     public User getLoggedInUser(){
         return mLoggedInUser;
+    }
+
+    public void setChatRoom(ChatRoom c){
+        this.mCurrentChatRoom = c;
+    }
+
+    public ChatRoom getChatRoom(){
+        return this.mCurrentChatRoom;
     }
 }

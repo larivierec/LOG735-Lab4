@@ -14,7 +14,9 @@ public class ChatRoomManager {
     private ChatRoomListWrapper mChatRoomList = new ChatRoomListWrapper();
     private HashMap<String, ChatRoom> mUserChatRoomMap = new HashMap<>();
 
-    private ChatRoomManager(){}
+    private ChatRoomManager(){
+
+    }
 
     public static ChatRoomManager getInstance(){
         if(mChatRoomManagerInstance == null){
