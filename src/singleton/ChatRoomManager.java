@@ -12,7 +12,7 @@ public class ChatRoomManager {
 
     private static ChatRoomManager mChatRoomManagerInstance = null;
     private ChatRoomListWrapper mChatRoomList = new ChatRoomListWrapper();
-    private HashMap<User, ChatRoom> mUserChatRoomMap = new HashMap<>();
+    private HashMap<String, ChatRoom> mUserChatRoomMap = new HashMap<>();
 
     private ChatRoomManager(){}
 
@@ -45,14 +45,11 @@ public class ChatRoomManager {
     }
 
     public ChatRoom getChatRoomAssociatedToUser(User e){
-        if(mUserChatRoomMap.containsKey(e)){
-            return mUserChatRoomMap.get(e);
-        }
-        return null;
+        return mUserChatRoomMap.get(e.getUsername());
     }
 
     public void changeRoom(User e, ChatRoom room){
-        mUserChatRoomMap.put(e, room);
+        mUserChatRoomMap.put(e.getUsername(), room);
     }
 
     public void addMessageToChatRoom(String chatRoomID, Message t){
