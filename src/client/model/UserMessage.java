@@ -1,35 +1,42 @@
 package client.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 
-public class UserMessage {
+public class UserMessage implements Serializable{
 
-    private String text;
-    private String username;
-    private Date date;
+    private String mText;
+    private String mUsername;
+    private Date mDate;
 
-    public String getText() {
-        return text;
+    public UserMessage(String mUsername, String text){
+        this.mUsername = mUsername;
+        this.mText = text;
+        this.mDate = new Date();
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public String getText() {
+        return mText;
+    }
+
+    public void setText(String mText) {
+        this.mText = mText;
     }
 
     public String getUsername() {
-        return username;
+        return mUsername;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String mUsername) {
+        this.mUsername = mUsername;
     }
 
     public Date getDate() {
-        return date;
+        return mDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setDate(Date mDate) {
+        this.mDate = mDate;
     }
 }

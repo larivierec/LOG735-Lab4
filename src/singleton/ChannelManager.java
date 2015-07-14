@@ -65,8 +65,7 @@ public class ChannelManager {
     }
 
 
-    public void addClientChannelsMap(Channel channel) {
-
+    public void addClientChannel(Channel channel) {
         mClientChannelsMap.add(channel);
     }
 
