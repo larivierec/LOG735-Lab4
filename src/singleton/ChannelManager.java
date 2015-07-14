@@ -73,4 +73,30 @@ public class ChannelManager {
         return this.mServerToServerMap;
     }
 
+
+    public void writeToAllServers(Object[] data){
+        for(ServerToServerConnection conn : mServerToServerMap){
+            conn.getChannel().writeAndFlush(data);
+        }
+    }
+
+    public void writeToAllServers(Message data){
+        for(ServerToServerConnection conn : mServerToServerMap){
+            conn.getChannel().writeAndFlush(data);
+        }
+    }
+
+    public void writeToAllClients(Object[] data){
+        //TODO need to try to get a list of all clients connected to the server
+        for(Channel c : mClientChannelsMap){
+            c.writeAndFlush(data);
+        }
+    }
+
+    public void writeToAllClients(Message data){
+        for(Channel c : mClientChannelsMap){
+            c.writeAndFlush(data);
+        }
+    }
+
 }

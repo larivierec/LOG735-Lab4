@@ -4,9 +4,10 @@ import messages.Message;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
-public class ChatRoom implements Serializable{
+public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     private String name;
     private String password;
@@ -52,7 +53,24 @@ public class ChatRoom implements Serializable{
         }
     }
 
+    public void setConnectedUsers(ChatRoom c){
+        this.mConnectedUsers = c.getConnectedUsers();
+    }
+
     public void addMessage(Message t){
         this.mChatRoomMessages.add(t);
+    }
+
+    @Override
+    public int compare(ChatRoom o1, ChatRoom o2) {
+        if(o1.getName().equals(o2.getName())){
+            return 0;
+        }
+        else if(o1.getName().compareTo(o2.getName()) > 0){
+            return 1;
+        }
+        else{
+            return -1;
+        }
     }
 }

@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class RegisterAction implements ActionListener{
+public class RegisterAction implements ActionListener {
 
     private JPasswordField mPasswordBox;
     private JTextField     mTextfield;

@@ -14,6 +14,9 @@ import singleton.ChatRoomManager;
 import singleton.UserManager;
 import util.Utilities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
 
@@ -71,7 +74,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 incomingData.getData()[0] = "LobbyMessage";
                 UserMessage theUserMessage = new UserMessage(messageSender.getUsername(), text);
                 incomingData.getData()[4] = theUserMessage;
-                writeToAllServers(incomingData.getData());
+                ChannelManager.getInstance().writeToAllServers(incomingData.getData());
             }
         }else if(commandID.equals("RequestServer")){
             ChannelManager.getInstance().addClientChannel(ctx.channel());
@@ -79,7 +82,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
         else if(commandID.equals("LobbyMessage")){
             System.out.println(incomingData.getData()[1]);
             //TODO this must check if the
-            writeToAllClients(incomingData);
+            ChannelManager.getInstance().writeToAllClients(incomingData);
 
         }else if(commandID.equals("Login")){
             String username = (String)incomingData.getData()[1];
@@ -89,11 +92,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
             if(temp != null && theSelectedRoom != null) {
-
-                //send user and room to other servers
-                Object[] data = {"UserRoomConfiguration", temp, theSelectedRoom};
-                writeToAllServers(data);
-
                 if(!mUserManager.getLoggedInUsers().contains(temp)) {
                     mUserManager.addUser(temp);
                     theSelectedRoom.addConectedUser(temp);
@@ -107,13 +105,15 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                     Message chatRoomUserListSend = new Message(chatRoomUserListObject);
 
                     ctx.writeAndFlush(chatRoomUserListSend);
-                    writeToAllClients(chatRoomUserListObject);
+                    ChannelManager.getInstance().writeToAllServers(chatRoomUserListSend);
+                    ChannelManager.getInstance().writeToAllClients(chatRoomUserListSend);
 
-                    Object[] roomListObject = {"RoomList", mChatRoomManager.getChatRoomList()};
+                    ArrayList<ChatRoom> room = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+                    Object[] roomListObject = {"RoomList", room};
                     Message roomListSend = new Message(roomListObject);
 
                     ctx.writeAndFlush(roomListSend);
-                    writeToAllClients(roomListObject);
+                    ChannelManager.getInstance().writeToAllClients(roomListObject);
                 }
             }
             else{
@@ -147,11 +147,10 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
              * Arg 1 - User object
              * Arg 2 - The room to switch to.
              */
-        }else if(commandID.equals("UserRoomConfiguration")){
-            User theUser = (User)incomingData.getData()[1];
-            ChatRoom theRoom = (ChatRoom)incomingData.getData()[2];
-
-            ChatRoomManager.getInstance().changeRoom(theUser, theRoom);
+        }else if(commandID.equals("RoomUserList")){
+            ChatRoom theRoom = (ChatRoom)incomingData.getData()[1];
+            ChatRoomManager.getInstance().registerChatRoom(theRoom);
+            ChannelManager.getInstance().writeToAllClients(incomingData);
         }
     }
 
@@ -160,30 +159,5 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         System.out.println(cause.getMessage());
-    }
-
-    private void writeToAllServers(Object[] data){
-        for(ServerToServerConnection conn : ChannelManager.getInstance().getServerToServerMap()){
-            conn.getChannel().writeAndFlush(data);
-        }
-    }
-
-    private void writeToAllServers(Message data){
-        for(ServerToServerConnection conn : ChannelManager.getInstance().getServerToServerMap()){
-            conn.getChannel().writeAndFlush(data);
-        }
-    }
-
-    private void writeToAllClients(Object[] data){
-        //TODO need to try to get a list of all clients connected to the server
-        for(Channel c : ChannelManager.getInstance().getClientChannels()){
-            c.writeAndFlush(data);
-        }
-    }
-
-    private void writeToAllClients(Message data){
-        for(Channel c : ChannelManager.getInstance().getClientChannels()){
-            c.writeAndFlush(data);
-        }
     }
 }

@@ -28,7 +28,6 @@ public class ChatServer implements IServer{
         this.mIPAddress = ipAddr;
         this.mListenPortNumber = portNumber;
         this.mConnectionPortNumber = connectionPort;
-        ChatRoomManager.getInstance().registerChatRoom(new ChatRoom("Lobby"));
     }
 
     @Override
