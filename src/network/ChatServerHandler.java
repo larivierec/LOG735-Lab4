@@ -72,7 +72,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 incomingData.getData()[3] = theUserMessage;
 
                 //rewrite to locally connected users
-                ctx.writeAndFlush(incomingData);
                 ChannelManager.getInstance().writeToAllClients(incomingData);
                 //write to otherservers
                 ChannelManager.getInstance().writeToAllServers(incomingData);
