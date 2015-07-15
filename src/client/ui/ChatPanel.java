@@ -1,9 +1,6 @@
 package client.ui;
 
-import client.model.ChatRoom;
-import client.model.ClientConnection;
-import client.model.PersistantUser;
-import client.model.User;
+import client.model.*;
 import interfaces.IObserver;
 import messages.Message;
 
@@ -25,7 +22,10 @@ public class ChatPanel extends JPanel implements IObserver {
     private JList<String> mClientList = new JList<>();
 
     private JLabel      mConnectedAs = new JLabel();
-    private JList<String> mChatHistory = new JList<>();
+
+    private DefaultListModel<String> listModel = new DefaultListModel();
+    private JList<String> mChatHistory = new JList<>(listModel);
+
     private JTextArea mTextArea = new JTextArea(3,2);
     private JButton mSendMessageButton = new JButton("Send");
 
@@ -72,7 +72,7 @@ public class ChatPanel extends JPanel implements IObserver {
                 String[] userArray = new String[c.getConnectedUsers().size()];
 
                 for(int i = 0; i < c.getConnectedUsers().size(); i++){
-                    userArray[i] = c.getConnectedUsers().get(i).getUsername();
+                    userArray[i] = c.getConnectedUsers().get(i);
                 }
 
                 mClientList.setListData(userArray);
@@ -90,7 +90,8 @@ public class ChatPanel extends JPanel implements IObserver {
                 mRoomList.invalidate();
                 mRoomList.repaint();
             }else if(command.equals("LobbyMessage")){
-                System.out.println(localMessage.getData()[1].toString());
+                UserMessage theUserMessage = (UserMessage) localMessage.getData()[3];
+                listModel.addElement(theUserMessage.toString());
             }
         }
     }

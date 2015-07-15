@@ -5,9 +5,6 @@ import client.model.UserMessage;
 import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
 import singleton.ChannelManager;
 import singleton.ChatRoomManager;
@@ -15,7 +12,6 @@ import singleton.UserManager;
 import util.Utilities;
 
 import java.util.ArrayList;
-import java.util.List;
 
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter{
@@ -63,7 +59,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             User messageSender = (User) incomingData.getData()[2];
             ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
 
-            if(incomingData.getData()[3] != null){
+            if(incomingData.getData()[3] == null){
                 incomingData.getData()[0] = "PrivateMessage";
             }
 
@@ -73,8 +69,13 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                 String text = (String) incomingData.getData()[1];
                 incomingData.getData()[0] = "LobbyMessage";
                 UserMessage theUserMessage = new UserMessage(messageSender.getUsername(), text);
-                incomingData.getData()[4] = theUserMessage;
-                ChannelManager.getInstance().writeToAllServers(incomingData.getData());
+                incomingData.getData()[3] = theUserMessage;
+
+                //rewrite to locally connected users
+                ctx.writeAndFlush(incomingData);
+                ChannelManager.getInstance().writeToAllClients(incomingData);
+                //write to otherservers
+                ChannelManager.getInstance().writeToAllServers(incomingData);
             }
         }else if(commandID.equals("RequestServer")){
             ChannelManager.getInstance().addClientChannel(ctx.channel());
@@ -92,14 +93,13 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
             if(temp != null && theSelectedRoom != null) {
-                if(!mUserManager.getLoggedInUsers().contains(temp)) {
+                if(!mUserManager.getLoggedInUsers().containsKey(temp.getUsername())) {
                     mUserManager.addUser(temp);
-                    theSelectedRoom.addConectedUser(temp);
-
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom);
 
                     Object[] array = {"Authenticated", temp, theSelectedRoom};
                     ctx.writeAndFlush(array);
+                    ChannelManager.getInstance().clientChannelAssociate(temp, ctx.channel());
 
                     Object[] chatRoomUserListObject = {"RoomUserList", theSelectedRoom};
                     Message chatRoomUserListSend = new Message(chatRoomUserListObject);
@@ -131,11 +131,18 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
              */
 
             String chatRoomName = (String)incomingData.getData()[1];
-            String chatRoomPW = (String)incomingData.getData()[2];
+            String chatRoomPW = ((String)incomingData.getData()[2]).trim();
             User requestingUser = (User)incomingData.getData()[3];
 
-            ChatRoom chatRoom  = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
-            ChatRoomManager.getInstance().changeRoom(requestingUser,chatRoom);
+            ChatRoom room;
+
+            if(chatRoomPW.equals("") || chatRoomPW.length() == 0){
+                room = new ChatRoom(chatRoomName);
+            }
+            else {
+                room = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
+            }
+            ChatRoomManager.getInstance().changeRoom(requestingUser,room);
         }else if(commandID.equals("SwitchRoom")){
 
             User userToSwitch = (User) incomingData.getData()[1];

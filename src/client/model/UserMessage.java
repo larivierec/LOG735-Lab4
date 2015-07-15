@@ -39,4 +39,9 @@ public class UserMessage implements Serializable{
     public void setDate(Date mDate) {
         this.mDate = mDate;
     }
+
+    @Override
+    public String toString(){
+        return getDate() + " " + getUsername() + " : " + getText();
+    }
 }

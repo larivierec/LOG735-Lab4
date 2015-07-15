@@ -1,5 +1,6 @@
 package singleton;
 
+import client.model.User;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.ChannelGroup;
@@ -19,10 +20,11 @@ public class ChannelManager {
     private final ChannelGroup mChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private List<Message> mServerList = new ArrayList<Message>();
     private List<ServerToServerConnection> mServerToServerMap = new ArrayList<ServerToServerConnection>();
-    private List<Channel> mClientChannelsMap = new ArrayList();
+    private List<Channel> mClientChannels = new ArrayList();
 
     private HashMap<Message, Integer> mServerUsage = new HashMap<Message, Integer>();
     private HashMap<Integer, Integer> mPortMapping = new HashMap<Integer, Integer>();
+    private HashMap<String, Channel>  mClientChannelMap = new HashMap<>();
     private ChannelManager(){}
 
     public static ChannelManager getInstance(){
@@ -61,12 +63,18 @@ public class ChannelManager {
     }
 
     public List<Channel> getClientChannels() {
-        return mClientChannelsMap;
+        return mClientChannels;
     }
 
 
     public void addClientChannel(Channel channel) {
-        mClientChannelsMap.add(channel);
+        mClientChannels.add(channel);
+    }
+
+    public void clientChannelAssociate(User user, Channel c){
+        if(this.mClientChannels.contains(c)){
+            this.mClientChannelMap.put(user.getUsername(), c);
+        }
     }
 
     public List<ServerToServerConnection> getServerToServerMap(){
@@ -87,14 +95,13 @@ public class ChannelManager {
     }
 
     public void writeToAllClients(Object[] data){
-        //TODO need to try to get a list of all clients connected to the server
-        for(Channel c : mClientChannelsMap){
+        for(Channel c : mClientChannels){
             c.writeAndFlush(data);
         }
     }
 
     public void writeToAllClients(Message data){
-        for(Channel c : mClientChannelsMap){
+        for(Channel c : mClientChannels){
             c.writeAndFlush(data);
         }
     }

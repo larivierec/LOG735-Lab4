@@ -11,7 +11,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     private String name;
     private String password;
-    private List<User> mConnectedUsers = new ArrayList<User>();
+    private List<String> mConnectedUsers = new ArrayList<String>();
     private List<Message> mChatRoomMessages = new ArrayList<Message>();
 
     public ChatRoom(String roomName){
@@ -43,14 +43,20 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         return this.mChatRoomMessages;
     }
 
-    public List<User> getConnectedUsers(){
+    public List<String> getConnectedUsers(){
         return this.mConnectedUsers;
     }
 
-    public void addConectedUser(User c){
-        if(!mConnectedUsers.contains(c)){
-            this.mConnectedUsers.add(c);
-        }
+    public void addConnectedUser(User c){
+        this.mConnectedUsers.add(c.getUsername());
+    }
+
+    public void removeConnectedUser(User c){
+        this.mConnectedUsers.forEach(userName -> {
+            if(userName.equals(c.getUsername())){
+                this.mConnectedUsers.remove(userName);
+            }
+        });
     }
 
     public void setConnectedUsers(ChatRoom c){

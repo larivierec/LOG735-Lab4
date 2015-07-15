@@ -2,13 +2,12 @@ package singleton;
 
 import client.model.User;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
 
 public class UserManager {
 
     private static UserManager instance = null;
-    private List<User> mLoggedInUsers = new LinkedList<User>();
+    private HashMap<String, User> mLoggedInUsers = new HashMap<String, User>();
     private UserManager(){}
 
     public static UserManager getInstance(){
@@ -19,12 +18,10 @@ public class UserManager {
     }
 
     public void addUser(User e){
-        if(mLoggedInUsers.contains(e)){
-           mLoggedInUsers.add(e);
-        }
+        this.mLoggedInUsers.put(e.getUsername(), e);
     }
 
-    public List<User> getLoggedInUsers(){
+    public HashMap<String, User> getLoggedInUsers(){
         return mLoggedInUsers;
     }
 }
