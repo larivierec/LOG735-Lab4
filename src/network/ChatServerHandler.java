@@ -1,7 +1,7 @@
 package network;
 
 import client.model.ChatRoom;
-import client.model.UserMessage;
+import client.model.LobbyMessage;
 import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
@@ -65,11 +65,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
             //if any of these are null there was a problem sending the data
             if(incomingData.getData()[2] != null && room != null) {
-                room.addMessage(incomingData);
                 String text = (String) incomingData.getData()[1];
                 incomingData.getData()[0] = "LobbyMessage";
-                UserMessage theUserMessage = new UserMessage(messageSender.getUsername(), text);
-                incomingData.getData()[3] = theUserMessage;
+                LobbyMessage theLobbyMessage = new LobbyMessage(messageSender.getUsername(), room.getName(), text);
+                room.addMessage(theLobbyMessage);
+                incomingData.getData()[1] = theLobbyMessage;
 
                 //rewrite to locally connected users
                 ChannelManager.getInstance().writeToAllClients(incomingData);
@@ -81,7 +81,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
         }
         else if(commandID.equals("LobbyMessage")){
             System.out.println(incomingData.getData()[1]);
-            //TODO this must check if the
             ChannelManager.getInstance().writeToAllClients(incomingData);
 
         }else if(commandID.equals("Login")){
@@ -110,8 +109,13 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                     ArrayList<ChatRoom> room = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
                     Object[] roomListObject = {"RoomList", room};
                     Message roomListSend = new Message(roomListObject);
-
                     ctx.writeAndFlush(roomListSend);
+
+
+                    ArrayList<LobbyMessage> messagesInRoom = new ArrayList<>(theSelectedRoom.getRoomHistory());
+                    Object[] messagesToSend = {"MessagesInRoom", messagesInRoom};
+                    ctx.writeAndFlush(messagesToSend);
+
                     ChannelManager.getInstance().writeToAllClients(roomListObject);
                 }
             }

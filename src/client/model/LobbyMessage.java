@@ -4,14 +4,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 
-public class UserMessage implements Serializable{
+public class LobbyMessage implements Serializable{
 
     private String mText;
     private String mUsername;
+    private String mLobbyName;
     private Date mDate;
 
-    public UserMessage(String mUsername, String text){
+    //The default constructor cannot be instanciated
+    private LobbyMessage(){}
+
+    public LobbyMessage(String mUsername, String lobbyName, String text){
         this.mUsername = mUsername;
+        this.mLobbyName = lobbyName;
         this.mText = text;
         this.mDate = new Date();
     }
@@ -22,6 +27,14 @@ public class UserMessage implements Serializable{
 
     public void setText(String mText) {
         this.mText = mText;
+    }
+
+    public void setLobbyName(String lobbyName) {
+        this.mLobbyName = lobbyName;
+    }
+
+    public String getLobbyName(){
+        return this.mLobbyName;
     }
 
     public String getUsername() {

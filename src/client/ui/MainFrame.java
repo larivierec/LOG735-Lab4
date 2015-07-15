@@ -114,7 +114,6 @@ public class MainFrame extends JFrame implements IObserver{
                 ClientConnection tempConnect = new ClientConnection((String)localMessage.getData()[1], (String)localMessage.getData()[2],mChatClientHandler);
                 this.setClientConnection(tempConnect);
 
-                mChatClientHandler.addObserver(mChatPanel);
                 tempConnect.startClient();
             }else if(command.equals("Authenticated")){
                 User loggedIn = (User) localMessage.getData()[1];
@@ -122,6 +121,10 @@ public class MainFrame extends JFrame implements IObserver{
                 PersistantUser.getInstance().setLoggedInUser(loggedIn);
                 PersistantUser.getInstance().setChatRoom(theChatRoom);
                 mChatPanel.setClientConnection(mClientConnection);
+
+                //these methods automatically call the singleton instance
+                mChatPanel.setConnectedAs();
+                mChatPanel.setCurrentLobby();
 
                 getContentPane().removeAll();
                 getContentPane().add(mChatPanel);

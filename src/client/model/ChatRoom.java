@@ -1,7 +1,5 @@
 package client.model;
 
-import messages.Message;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,7 +10,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
     private String name;
     private String password;
     private List<String> mConnectedUsers = new ArrayList<String>();
-    private List<Message> mChatRoomMessages = new ArrayList<Message>();
+    private List<LobbyMessage> mChatRoomMessages = new ArrayList<>();
 
     public ChatRoom(String roomName){
         this.name = roomName;
@@ -39,7 +37,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.password = password;
     }
 
-    public List<Message> getRoomHistory(){
+    public List<LobbyMessage> getRoomHistory(){
         return this.mChatRoomMessages;
     }
 
@@ -63,7 +61,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.mConnectedUsers = c.getConnectedUsers();
     }
 
-    public void addMessage(Message t){
+    public void addMessage(LobbyMessage t){
         this.mChatRoomMessages.add(t);
     }
 
