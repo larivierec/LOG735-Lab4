@@ -18,4 +18,8 @@ public class ChatRoomListWrapper implements Serializable{
     public HashMap<String, ChatRoom> getChatRoomList(){
         return mChatRoomList;
     }
+
+    public void setMap(HashMap<String, ChatRoom> c){
+        this.mChatRoomList = c;
+    }
 }

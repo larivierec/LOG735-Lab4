@@ -10,7 +10,7 @@ public class LoadBalancingProtocol extends Protocol {
 
     @Override
     Message parseProtocolData(Object msg) {
-        return new Message((String[]) msg);
+        return new Message((Object[]) msg);
     }
 
 }

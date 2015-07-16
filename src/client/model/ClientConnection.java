@@ -11,6 +11,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatClientHandler;
+import util.Utilities;
 
 import java.util.List;
 
@@ -86,5 +87,32 @@ public class ClientConnection {
     public void sendPrivateMessage(String textToSend, List<User> listOfUsers){
 
     }
+
+    public void sendCreateRoom(String roomName, char[] pass){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "CreateChatRoom";
+        arrayToSend[1] = roomName;
+        if(pass.length != 0)
+            arrayToSend[2] = Utilities.sha256(pass);
+        else
+            arrayToSend[2] = "";
+        arrayToSend[3] = PersistantUser.getInstance().getLoggedInUser();
+
+        if(mFutureChannel != null){
+            mFutureChannel.channel().writeAndFlush(arrayToSend);
+        }
+    }
+
+    public void sendSwitchRoom(String roomToSwitchTo){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "SwitchRoom";
+        arrayToSend[1] = roomToSwitchTo;
+        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+
+        if(mFutureChannel != null){
+            mFutureChannel.channel().writeAndFlush(arrayToSend);
+        }
+    }
+
 
 }

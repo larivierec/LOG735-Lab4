@@ -2,11 +2,13 @@ package singleton;
 
 import client.model.ChatRoom;
 import client.model.User;
+import interfaces.IObserver;
 import wrappers.ChatRoomListWrapper;
 
 import java.util.HashMap;
+import java.util.Observable;
 
-public class ChatRoomManager {
+public class ChatRoomManager implements IObserver{
 
     private static ChatRoomManager mChatRoomManagerInstance = null;
     private ChatRoomListWrapper mChatRoomMap = new ChatRoomListWrapper();
@@ -33,6 +35,7 @@ public class ChatRoomManager {
     private void updateChatRoom(ChatRoom c){
         ChatRoom theRoomToUpdate = mChatRoomMap.getChatRoomList().get(c.getName());
         theRoomToUpdate.setConnectedUsers(c);
+        update(null, c);
     }
 
     public void removeChatRoom(ChatRoom c){
@@ -54,15 +57,32 @@ public class ChatRoomManager {
         return mChatRoomMap.getChatRoomList().get(mChatRoomUserMap.get(e.getUsername()));
     }
 
-    public void changeRoom(User e, ChatRoom newRoom){
-        ChatRoom oldRoom =  mChatRoomMap.getChatRoomList().get(newRoom.getName());
-        oldRoom.removeConnectedUser(e);
+    public void changeRoom(User e, ChatRoom newRoom, ChatRoom chatRoomAssociatedToUser){
+        if(chatRoomAssociatedToUser != null) {
+            ChatRoom oldRoom = mChatRoomMap.getChatRoomList().get(chatRoomAssociatedToUser.getName());
+            oldRoom.removeConnectedUser(e);
+        }
 
         newRoom.addConnectedUser(e);
         mChatRoomUserMap.put(e.getUsername(), newRoom.getName());
+
+    }
+
+    public void setChatRoomList(HashMap<String, ChatRoom> theMap){
+        this.mChatRoomMap.setMap(theMap);
     }
 
     public HashMap<String,ChatRoom> getChatRoomList(){
         return this.mChatRoomMap.getChatRoomList();
+    }
+
+    @Override
+    public void update(Observable e, Object t) {
+        if(t instanceof ChatRoom){
+            ChatRoom room = (ChatRoom) t;
+
+            Object[] toSend = {"UpdateRoom", room};
+            ChannelManager.getInstance().writeToAllServers(toSend);
+        }
     }
 }

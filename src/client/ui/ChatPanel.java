@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.controller.RoomSelectionListener;
 import client.model.*;
 import interfaces.IObserver;
 import messages.Message;
@@ -29,6 +30,10 @@ public class ChatPanel extends JPanel implements IObserver {
     private JTextArea mTextArea = new JTextArea(3,2);
     private JButton mSendMessageButton = new JButton("Send");
 
+    private JTextField mCreateRoomField = new JTextField();
+    private JPasswordField mCreateRoomPassField = new JPasswordField();
+    private JButton mCreateRoomButton = new JButton("Create Room");
+
     public ChatPanel() {
         this.setLayout(new BorderLayout());
         mRoomLabel.setBounds(new Rectangle(2, 2, 130, 30));
@@ -43,11 +48,21 @@ public class ChatPanel extends JPanel implements IObserver {
         mTextArea.setBounds(new Rectangle(290, 400, 250, 100));
         mSendMessageButton.setBounds(new Rectangle(550,500,100,30));
 
+        mCreateRoomField.setBounds(new Rectangle(290, 580, 100, 30));
+        mCreateRoomPassField.setBounds(new Rectangle(290,620,100,30));
+        mCreateRoomButton.setBounds(new Rectangle(390,580,100,30));
+
         mSendMessageButton.addActionListener(e -> {
                     mClientConnection.sendMessage(mTextArea.getText());
                     mTextArea.setText("");
                 }
         );
+
+        mCreateRoomButton.addActionListener(e -> {
+            mClientConnection.sendCreateRoom(mCreateRoomField.getText(), mCreateRoomPassField.getPassword());
+        });
+
+        mRoomList.addListSelectionListener(new RoomSelectionListener(mClientConnection));
 
         this.add(mRoomLabel);
         this.add(mRoomList);
@@ -60,6 +75,9 @@ public class ChatPanel extends JPanel implements IObserver {
         this.add(mChatHistory);
         this.add(mTextArea);
         this.add(mSendMessageButton);
+        this.add(mCreateRoomField);
+        this.add(mCreateRoomPassField);
+        this.add(mCreateRoomButton);
         this.add(new JLabel());
         this.setVisible(true);
     }
@@ -112,6 +130,11 @@ public class ChatPanel extends JPanel implements IObserver {
                 messages.forEach(lobbyMessage -> {
                     listModel.addElement(lobbyMessage.toString());
                 });
+            }else if(command.equals("NewChatRoom")){
+                ChatRoom incomingRoom = (ChatRoom) localMessage.getData()[1];
+
+                this.mCurrentLobby.setText(incomingRoom.getName());
+                this.listModel.clear();
             }
         }
     }

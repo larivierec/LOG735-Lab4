@@ -10,6 +10,7 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import singleton.ChatRoomManager;
 
 public class ServerToServerConnection {
 
@@ -48,7 +49,7 @@ public class ServerToServerConnection {
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
                         if(channelFuture.isSuccess()){
-                            System.out.println("Connection Established with server.");
+
                         }
                     }
                 }

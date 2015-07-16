@@ -1,16 +1,20 @@
 package client.model;
 
+import singleton.ChatRoomManager;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     private String name;
     private String password;
-    private List<String> mConnectedUsers = new ArrayList<String>();
+    private CopyOnWriteArrayList<String> mConnectedUsers = new CopyOnWriteArrayList<String>();
     private List<LobbyMessage> mChatRoomMessages = new ArrayList<>();
+    private List<ChatRoomManager> mObserverList = new ArrayList<>();
 
     public ChatRoom(String roomName){
         this.name = roomName;
@@ -41,7 +45,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         return this.mChatRoomMessages;
     }
 
-    public List<String> getConnectedUsers(){
+    public CopyOnWriteArrayList<String> getConnectedUsers(){
         return this.mConnectedUsers;
     }
 
@@ -49,9 +53,13 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.mConnectedUsers.add(c.getUsername());
     }
 
+    public void addConnectedUser(String userName) {
+        this.mConnectedUsers.add(userName);
+    }
+
     public void removeConnectedUser(User c){
         this.mConnectedUsers.forEach(userName -> {
-            if(userName.equals(c.getUsername())){
+            if (userName.equals(c.getUsername())) {
                 this.mConnectedUsers.remove(userName);
             }
         });
@@ -63,6 +71,20 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     public void addMessage(LobbyMessage t){
         this.mChatRoomMessages.add(t);
+    }
+
+    public void setChatRoomMessages(List<LobbyMessage> messages){
+        this.mChatRoomMessages = messages;
+    }
+
+    public void addObserver(ChatRoomManager c){
+        this.mObserverList.add(c);
+    }
+
+    public void notifyObserver(ChatRoom c){
+        this.mObserverList.forEach(manager -> {
+            manager.update(null, c);
+        });
     }
 
     @Override
