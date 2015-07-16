@@ -1,6 +1,5 @@
 package client.ui;
 
-import client.controller.RoomSelectionListener;
 import client.model.*;
 import interfaces.IObserver;
 import messages.Message;
@@ -15,7 +14,8 @@ public class ChatPanel extends JPanel implements IObserver {
     private ClientConnection mClientConnection;
 
     private JLabel      mRoomLabel = new JLabel("Room List");
-    private JList<String> mRoomList = new JList<>();
+    private DefaultListModel<String> mRoomListModel = new DefaultListModel();
+    private JList<String> mRoomList = new JList<>(mRoomListModel);
     private JLabel      mClientLabel = new JLabel("Client List");
     private JList<String> mClientList = new JList<>();
 
@@ -24,8 +24,8 @@ public class ChatPanel extends JPanel implements IObserver {
     private JLabel      mCurrentLobbyLabel   = new JLabel("Current Room: ");
     private JLabel      mCurrentLobby   = new JLabel();
 
-    private DefaultListModel<String> listModel = new DefaultListModel();
-    private JList<String> mChatHistory = new JList<>(listModel);
+    private DefaultListModel<String> mChatHistoryModel = new DefaultListModel();
+    private JList<String> mChatHistory = new JList<>(mChatHistoryModel);
 
     private JTextArea mTextArea = new JTextArea(3,2);
     private JButton mSendMessageButton = new JButton("Send");
@@ -62,7 +62,11 @@ public class ChatPanel extends JPanel implements IObserver {
             mClientConnection.sendCreateRoom(mCreateRoomField.getText(), mCreateRoomPassField.getPassword());
         });
 
-        mRoomList.addListSelectionListener(new RoomSelectionListener(mClientConnection));
+        mRoomList.addListSelectionListener(e -> {
+            JList list = (JList) e.getSource();
+            String roomName = mRoomListModel.getElementAt(list.getSelectedIndex());
+            mClientConnection.sendSwitchRoom(roomName);
+        });
 
         this.add(mRoomLabel);
         this.add(mRoomList);
@@ -101,41 +105,52 @@ public class ChatPanel extends JPanel implements IObserver {
                 String userName = (String)localMessage.getData()[1];
             }else if(command.equals("RoomUserList")){
                 ChatRoom c = (ChatRoom) localMessage.getData()[1];
-                String[] userArray = new String[c.getConnectedUsers().size()];
-
-                for(int i = 0; i < c.getConnectedUsers().size(); i++){
-                    userArray[i] = c.getConnectedUsers().get(i);
-                }
-
-                mClientList.setListData(userArray);
-                mClientList.invalidate();
-                mClientList.repaint();
+                populateUserList(c);
             }else if(command.equals("RoomList")){
                 List<ChatRoom> roomList = (List<ChatRoom>) localMessage.getData()[1];
-                String[] chatRoomArray = new String[roomList.size()];
+                mRoomListModel.clear();
 
                 for(int i = 0; i < roomList.size(); i++){
-                    chatRoomArray[i] = roomList.get(i).getName();
+                    mRoomListModel.addElement(roomList.get(i).getName());
                 }
 
-                mRoomList.setListData(chatRoomArray);
-                mRoomList.invalidate();
-                mRoomList.repaint();
             }else if(command.equals("LobbyMessage")){
                 LobbyMessage theLobbyMessage = (LobbyMessage) localMessage.getData()[1];
                 if(PersistantUser.getInstance().getChatRoom().getName().equals(theLobbyMessage.getLobbyName()))
-                    listModel.addElement(theLobbyMessage.toString());
+                    mChatHistoryModel.addElement(theLobbyMessage.toString());
             }else if(command.equals("MessagesInRoom")){
                 ArrayList<LobbyMessage> messages = (ArrayList<LobbyMessage>) localMessage.getData()[1];
                 messages.forEach(lobbyMessage -> {
-                    listModel.addElement(lobbyMessage.toString());
+                    mChatHistoryModel.addElement(lobbyMessage.toString());
                 });
             }else if(command.equals("NewChatRoom")){
                 ChatRoom incomingRoom = (ChatRoom) localMessage.getData()[1];
+                populateUserList(incomingRoom);
 
+                PersistantUser.getInstance().setChatRoom(incomingRoom);
                 this.mCurrentLobby.setText(incomingRoom.getName());
-                this.listModel.clear();
+                this.mChatHistoryModel.clear();
+            }else if(command.equals("ChangeRoom")){
+                ChatRoom incomingRoom = (ChatRoom) localMessage.getData()[1];
+                populateUserList(incomingRoom);
+            }else if(command.equals("AcknowledgeRoomChange")){
+                this.mCurrentLobby.setText((String) localMessage.getData()[1]);
+                this.mChatHistoryModel.clear();
             }
+        }
+    }
+
+    private void populateUserList(ChatRoom c) {
+        if(c.getName().equals(PersistantUser.getInstance().getChatRoom().getName())) {
+            String[] userArray = new String[c.getConnectedUsers().size()];
+
+            for (int i = 0; i < c.getConnectedUsers().size(); i++) {
+                userArray[i] = c.getConnectedUsers().get(i);
+            }
+
+            mClientList.setListData(userArray);
+            mClientList.invalidate();
+            mClientList.repaint();
         }
     }
 

@@ -51,7 +51,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
         if(commandID.equals("AvailableServer")){
             String ipAddr = (String)incomingData.getData()[1];
-            Integer incomingPort = Integer.parseInt((String)incomingData.getData()[2]);
+            Integer incomingPort = Integer.parseInt((String) incomingData.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
         }else if(commandID.equals("IncomingMessage")){
             User messageSender = (User) incomingData.getData()[2];
@@ -171,6 +171,14 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
             ChatRoomManager.getInstance().changeRoom(userToSwitch, newRoom, oldRoom);
 
+            Object[] sendRoom = {"ChangeRoom", newRoom};
+            ChannelManager.getInstance().writeToAllServers(sendRoom);
+            ChannelManager.getInstance().writeToAllClients(sendRoom);
+            ctx.writeAndFlush(sendRoom);
+
+            Object[] sendAck = {"AcknowledgeRoomChange", newRoom.getName()};
+            ctx.writeAndFlush(sendAck);
+
         }else if(commandID.equals("RoomUserList")){
             ChatRoom theRoom = (ChatRoom)incomingData.getData()[1];
             ChatRoomManager.getInstance().registerChatRoom(theRoom);
@@ -183,6 +191,10 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             incomingData.getData()[1] = roomList;
 
             ChannelManager.getInstance().writeToAllClients(incomingData);
+        }else if(commandID.equals("ChangeRoom")){
+            ChatRoom room = (ChatRoom)incomingData.getData()[1];
+            ArrayList<ChatRoom> roomList = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+            incomingData.getData()[1] = roomList;
         }else if(commandID.equals("ServerRoomInfo")){
             HashMap<String, ChatRoom> receivedRooms = (HashMap<String, ChatRoom>)incomingData.getData()[1];
             Iterator it = receivedRooms.entrySet().iterator();

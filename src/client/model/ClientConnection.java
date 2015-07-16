@@ -106,8 +106,8 @@ public class ClientConnection {
     public void sendSwitchRoom(String roomToSwitchTo){
         Object[] arrayToSend = new Object[10];
         arrayToSend[0] = "SwitchRoom";
-        arrayToSend[1] = roomToSwitchTo;
-        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[2] = roomToSwitchTo;
 
         if(mFutureChannel != null){
             mFutureChannel.channel().writeAndFlush(arrayToSend);

@@ -59,13 +59,11 @@ public class ChatRoomManager implements IObserver{
 
     public void changeRoom(User e, ChatRoom newRoom, ChatRoom chatRoomAssociatedToUser){
         if(chatRoomAssociatedToUser != null) {
-            ChatRoom oldRoom = mChatRoomMap.getChatRoomList().get(chatRoomAssociatedToUser.getName());
-            oldRoom.removeConnectedUser(e);
+            chatRoomAssociatedToUser.removeConnectedUser(e);
         }
 
         newRoom.addConnectedUser(e);
         mChatRoomUserMap.put(e.getUsername(), newRoom.getName());
-
     }
 
     public void setChatRoomList(HashMap<String, ChatRoom> theMap){
