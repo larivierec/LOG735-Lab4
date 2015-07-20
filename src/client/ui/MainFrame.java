@@ -85,7 +85,7 @@ public class MainFrame extends JFrame implements IObserver{
         mLoginRegistrationPanel.add(new JLabel());
 
         this.setContentPane(mLoginRegistrationPanel);
-        this.setSize(650, 650);
+        this.setSize(700, 700);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.validate();
@@ -120,7 +120,7 @@ public class MainFrame extends JFrame implements IObserver{
                 ChatRoom theChatRoom = (ChatRoom) localMessage.getData()[2];
                 PersistantUser.getInstance().setLoggedInUser(loggedIn);
                 PersistantUser.getInstance().setChatRoom(theChatRoom);
-                mChatPanel.setClientConnection(mClientConnection);
+                mChatPanel.setClientConnection(mClientConnection, theChatRoom);
 
                 //these methods automatically call the singleton instance
                 mChatPanel.setConnectedAs();

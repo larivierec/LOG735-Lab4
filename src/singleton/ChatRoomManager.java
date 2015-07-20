@@ -54,11 +54,25 @@ public class ChatRoomManager implements IObserver{
 
     public ChatRoom getChatRoomAssociatedToUser(User e){
         //the mapping of mapping maps
-        return mChatRoomMap.getChatRoomList().get(mChatRoomUserMap.get(e.getUsername()));
+        for (ChatRoom chat : mChatRoomMap.getChatRoomList().values()){
+
+            for (String username : chat.getConnectedUsers()) {
+
+                if(e.getUsername().equals(username)) {
+
+                    return chat;
+                }
+            }
+        }
+
+        return null;
+
     }
 
     public void changeRoom(User e, ChatRoom newRoom, ChatRoom chatRoomAssociatedToUser){
+
         if(chatRoomAssociatedToUser != null) {
+
             chatRoomAssociatedToUser.removeConnectedUser(e);
         }
 

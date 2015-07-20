@@ -45,6 +45,7 @@ public class ChannelManager {
     }
 
     public ChannelGroup getChannels(){
+
         return mChannels;
     }
 
@@ -89,7 +90,10 @@ public class ChannelManager {
     }
 
     public void writeToAllServers(Message data){
+
         for(ServerToServerConnection conn : mServerToServerMap){
+            System.out.println("server : "+mServerToServerMap.size());
+
             conn.getChannel().writeAndFlush(data);
         }
     }
@@ -101,8 +105,12 @@ public class ChannelManager {
     }
 
     public void writeToAllClients(Message data){
+
+        System.out.println(mClientChannels.size());
         for(Channel c : mClientChannels){
             c.writeAndFlush(data);
+            System.out.println("test"+c.id().asShortText());
+
         }
     }
 

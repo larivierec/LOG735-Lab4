@@ -2,6 +2,8 @@ package network;
 
 import client.model.ChatRoom;
 import client.model.LobbyMessage;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import io.netty.channel.Channel;
 import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
@@ -11,13 +13,14 @@ import singleton.ChatRoomManager;
 import singleton.UserManager;
 import util.Utilities;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.nio.channels.*;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @ChannelHandler.Sharable
-public class ChatServerHandler extends ChannelHandlerAdapter{
+public class ChatServerHandler extends ChannelHandlerAdapter {
+
+    private CopyOnWriteArrayList<String> messagesReceived = new CopyOnWriteArrayList<>();
 
     private ChatProtocol mChatProtocol = new ChatProtocol();
 
@@ -26,9 +29,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     private LoginSystem mLoginSystem = new LoginSystem();
 
     private Integer mListenPort;
-    private String  mIPAddress;
+    private String mIPAddress;
 
-    public ChatServerHandler(String ipAddr, Integer listenPort){
+    public ChatServerHandler(String ipAddr, Integer listenPort) {
         this.mIPAddress = ipAddr;
         this.mListenPort = listenPort;
     }
@@ -47,22 +50,37 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message incomingData = mChatProtocol.parseProtocolData(msg);
-        String commandID = (String)incomingData.getData()[0];
+        String[] headerSplit = ((String) incomingData.getData()[0]).split(";");
+        String commandID = headerSplit[0];
 
-        if(commandID.equals("AvailableServer")){
-            String ipAddr = (String)incomingData.getData()[1];
+        if (headerSplit.length > 1) {
+
+            String commingFrom = (String) incomingData.getData()[1];
+        }
+
+        if (commandID.equals("AvailableServer")) {
+            String ipAddr = (String) incomingData.getData()[1];
             Integer incomingPort = Integer.parseInt((String) incomingData.getData()[2]);
             ChannelManager.getInstance().addServerToServer(new ServerToServerConnection(ipAddr, incomingPort.toString()));
-        }else if(commandID.equals("IncomingMessage")){
+        } else if (commandID.equals("IncomingMessage")) {
+
+            if (!receivedFromServer(ctx.channel())) {
+
+                ChannelManager.getInstance().writeToAllServers(incomingData);
+            } else {
+
+                System.out.println("me ");
+            }
+
             User messageSender = (User) incomingData.getData()[2];
             ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
 
-            if(incomingData.getData()[3] == null){
+            if (incomingData.getData()[3] == null) {
                 incomingData.getData()[0] = "PrivateMessage";
             }
 
             //if any of these are null there was a problem sending the data
-            if(incomingData.getData()[2] != null && room != null) {
+            if (incomingData.getData()[2] != null && room != null) {
                 String text = (String) incomingData.getData()[1];
                 incomingData.getData()[0] = "LobbyMessage";
                 LobbyMessage theLobbyMessage = new LobbyMessage(messageSender.getUsername(), room.getName(), text);
@@ -71,27 +89,27 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
                 //rewrite to locally connected users
                 ChannelManager.getInstance().writeToAllClients(incomingData);
-                //write to otherservers
-                ChannelManager.getInstance().writeToAllServers(incomingData);
             }
-        }else if(commandID.equals("RequestServer")){
+        } else if (commandID.equals("RequestServer")) {
             ChannelManager.getInstance().addClientChannel(ctx.channel());
-        }
-        else if(commandID.equals("LobbyMessage")){
-            LobbyMessage messageReceived = (LobbyMessage)incomingData.getData()[1];
+        } else if (commandID.equals("LobbyMessage")) {
+            LobbyMessage messageReceived = (LobbyMessage) incomingData.getData()[1];
             ChatRoom theRoomToUpdate = ChatRoomManager.getInstance().getChatRoom(messageReceived.getLobbyName());
             theRoomToUpdate.addMessage(messageReceived);
             ChannelManager.getInstance().writeToAllClients(incomingData);
 
-        }else if(commandID.equals("Login")){
-            String username = (String)incomingData.getData()[1];
-            String hashedPW = (String)incomingData.getData()[2];
-            String roomID = (String)incomingData.getData()[3];
+        } else if (commandID.equals("Login")) {
+            String username = (String) incomingData.getData()[1];
+            String hashedPW = (String) incomingData.getData()[2];
+            String roomID = (String) incomingData.getData()[3];
 
-            User temp = mLoginSystem.authenticateUser(username,hashedPW.toCharArray());
+            User temp = mLoginSystem.authenticateUser(username, hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
-            if(temp != null && theSelectedRoom != null) {
-                if(!mUserManager.getLoggedInUsers().containsKey(temp.getUsername())) {
+            if (temp != null && theSelectedRoom != null) {
+                if (!mUserManager.getLoggedInUsers().containsKey(temp.getUsername())) {
+
+                    ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+
                     mUserManager.addUser(temp);
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom, ChatRoomManager.getInstance().getChatRoomAssociatedToUser(temp));
 
@@ -99,15 +117,18 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
                     ctx.writeAndFlush(array);
                     ChannelManager.getInstance().clientChannelAssociate(temp, ctx.channel());
 
-                    Object[] chatRoomUserListObject = {"RoomUserList", theSelectedRoom};
+                    Object[] chatRoomUserListObject = {"RoomUserList", theSelectedRoom, rooms};
                     Message chatRoomUserListSend = new Message(chatRoomUserListObject);
 
                     ctx.writeAndFlush(chatRoomUserListSend);
-                    ChannelManager.getInstance().writeToAllServers(chatRoomUserListSend);
+
+                    if (!receivedFromServer(ctx.channel())) {
+
+                        ChannelManager.getInstance().writeToAllServers(chatRoomUserListSend);
+                    }
                     ChannelManager.getInstance().writeToAllClients(chatRoomUserListSend);
 
-                    ArrayList<ChatRoom> room = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
-                    Object[] roomListObject = {"RoomList", room};
+                    Object[] roomListObject = {"RoomList", rooms};
                     Message roomListSend = new Message(roomListObject);
                     ctx.writeAndFlush(roomListSend);
 
@@ -118,25 +139,31 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
                     ChannelManager.getInstance().writeToAllClients(roomListObject);
                 }
-            }
-            else{
+            } else {
                 String[] toReturn = new String[2];
                 toReturn[0] = "IncorrectAuthentication";
                 toReturn[1] = (String) incomingData.getData()[2];
                 ctx.writeAndFlush(toReturn);
             }
-        }else if(commandID.equals("CreateChatRoom")){
+        } else if (commandID.equals("CreateChatRoom")) {
 
-            String chatRoomName = (String)incomingData.getData()[1];
-            String chatRoomPW = ((String)incomingData.getData()[2]).trim();
-            User requestingUser = (User)incomingData.getData()[3];
+
+            if (!receivedFromServer(ctx.channel())) {
+
+                Object[] sendRoom = {"CreateChatRoom",(String) incomingData.getData()[1],(String)incomingData.getData()[2],(User)incomingData.getData()[3]};
+
+                ChannelManager.getInstance().writeToAllServers(sendRoom);
+            }
+
+            String chatRoomName = (String) incomingData.getData()[1];
+            String chatRoomPW = ((String) incomingData.getData()[2]).trim();
+            User requestingUser = (User) incomingData.getData()[3];
 
             ChatRoom newRoom;
 
-            if(chatRoomPW.equals("") || chatRoomPW.length() == 0){
+            if (chatRoomPW.equals("") || chatRoomPW.length() == 0) {
                 newRoom = new ChatRoom(chatRoomName);
-            }
-            else {
+            } else {
                 newRoom = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
             }
             ChatRoomManager.getInstance().registerChatRoom(newRoom);
@@ -145,7 +172,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             ChatRoomManager.getInstance().changeRoom(requestingUser, newRoom, oldRoom);
 
             Object[] sendRoom = {"NewChatRoom", newRoom};
-            ChannelManager.getInstance().writeToAllServers(sendRoom);
+
+            if (!receivedFromServer(ctx.channel())) {
+
+                ChannelManager.getInstance().writeToAllServers(sendRoom);
+            }
 
             ctx.writeAndFlush(sendRoom);
 
@@ -153,15 +184,21 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
             ArrayList<ChatRoom> roomList = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
             incomingData.getData()[1] = roomList;
             ChannelManager.getInstance().writeToAllClients(incomingData);
-            ChannelManager.getInstance().writeToAllServers(incomingData);
 
-            Object[] chatRoomUserListObject = {"RoomUserList", newRoom};
+
+            Object[] chatRoomUserListObject = {"RoomUserList", newRoom, roomList};
             Message chatRoomUserListSend = new Message(chatRoomUserListObject);
 
-            ChannelManager.getInstance().writeToAllServers(chatRoomUserListSend);
+            ChannelManager.getInstance().writeToAllClients(chatRoomUserListSend);
 
 
-        }else if(commandID.equals("SwitchRoom")){
+        } else if (commandID.equals("SwitchRoom")) {
+
+            if (!receivedFromServer(ctx.channel())) {
+
+                ChannelManager.getInstance().writeToAllServers(incomingData);
+            }
+
 
             User userToSwitch = (User) incomingData.getData()[1];
             String roomToSwitch = (String) incomingData.getData()[2];
@@ -171,57 +208,86 @@ public class ChatServerHandler extends ChannelHandlerAdapter{
 
             ChatRoomManager.getInstance().changeRoom(userToSwitch, newRoom, oldRoom);
 
-            Object[] sendRoom = {"ChangeRoom", newRoom};
-            ChannelManager.getInstance().writeToAllServers(sendRoom);
-            ChannelManager.getInstance().writeToAllClients(sendRoom);
-            ctx.writeAndFlush(sendRoom);
+            for (Channel channel : ChannelManager.getInstance().getClientChannels()) {
 
-            Object[] sendAck = {"AcknowledgeRoomChange", newRoom.getName()};
-            ctx.writeAndFlush(sendAck);
+                if (ctx.channel().id().asLongText().equals(channel.id().asLongText())) {
 
-        }else if(commandID.equals("RoomUserList")){
-            ChatRoom theRoom = (ChatRoom)incomingData.getData()[1];
-            ChatRoomManager.getInstance().registerChatRoom(theRoom);
-            ChannelManager.getInstance().writeToAllClients(incomingData);
-        }else if(commandID.equals("NewChatRoom")){
-            incomingData.getData()[0] = "RoomList";
-            ChatRoom room = (ChatRoom)incomingData.getData()[1];
+                    Object[] sendAck = {"AcknowledgeRoomChange", newRoom};
+                    ctx.writeAndFlush(sendAck);
+                    continue;
+                }
+            }
+
+            List<ChatRoom> roomList = new ArrayList<>();
+
+            roomList.addAll(ChatRoomManager.getInstance().getChatRoomList().values());
+
+            Object[] sendNewRoom = {"ChangeRoom", roomList};
+            ChannelManager.getInstance().writeToAllClients(sendNewRoom);
+
+        } else if (commandID.equals("RoomUserList")) {
+
+            ChatRoom room = (ChatRoom) incomingData.getData()[1];
             ChatRoomManager.getInstance().registerChatRoom(room);
+            incomingData.getData()[2] = new ArrayList<>(ChatRoomManager.getInstance().getChatRoomList().values());
+            ChannelManager.getInstance().writeToAllClients(incomingData);
+        } else if (commandID.equals("NewChatRoom")) {
+            incomingData.getData()[0] = "RoomList";
+            ChatRoom room = (ChatRoom) incomingData.getData()[1];
+            ChatRoomManager.getInstance().registerChatRoom(room);
+            User user = new User(1,"","");
+            user.setUsername(room.getConnectedUsers().get(0));
+            ChatRoom oldRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(user);
+            ChatRoomManager.getInstance().changeRoom(user, room, oldRoom);
             ArrayList<ChatRoom> roomList = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
             incomingData.getData()[1] = roomList;
 
             ChannelManager.getInstance().writeToAllClients(incomingData);
-        }else if(commandID.equals("ChangeRoom")){
+        } else if (commandID.equals("ChangeRoom")) {
+
+            //TODO ChangeRoom server
+            /*
             ChatRoom room = (ChatRoom)incomingData.getData()[1];
             ArrayList<ChatRoom> roomList = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
-            incomingData.getData()[1] = roomList;
-        }else if(commandID.equals("ServerRoomInfo")){
-            HashMap<String, ChatRoom> receivedRooms = (HashMap<String, ChatRoom>)incomingData.getData()[1];
+            incomingData.getData()[1] = roomList;*/
+        } else if (commandID.equals("ServerRoomInfo")) {
+            HashMap<String, ChatRoom> receivedRooms = (HashMap<String, ChatRoom>) incomingData.getData()[1];
             Iterator it = receivedRooms.entrySet().iterator();
             String roomName = null;
             ChatRoom room = null;
 
             while (it.hasNext()) {
-                Map.Entry localPair = (Map.Entry)it.next();
+                Map.Entry localPair = (Map.Entry) it.next();
                 room = (ChatRoom) localPair.getValue();
                 roomName = (String) localPair.getKey();
                 ChatRoom localRoomToUpdate = ChatRoomManager.getInstance().getChatRoom(roomName);
-                if(localRoomToUpdate == null){
+                if (localRoomToUpdate == null) {
                     ChatRoomManager.getInstance().registerChatRoom(room);
-                }
-                else {
+                } else {
                     room.getConnectedUsers().forEach(userName -> {
                         if (!localRoomToUpdate.getConnectedUsers().contains(userName)) {
                             localRoomToUpdate.addConnectedUser(userName);
                         }
                     });
-                    if(localRoomToUpdate.getRoomHistory().size() == 0)
+                    if (localRoomToUpdate.getRoomHistory().size() == 0)
                         localRoomToUpdate.setChatRoomMessages(room.getRoomHistory());
                 }
             }
         }
     }
 
+    public boolean receivedFromServer(Channel channel) {
+
+        for(Channel c : ChannelManager.getInstance().getClientChannels()){
+
+            if (c.id().asLongText().equals(channel.id().asLongText())) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

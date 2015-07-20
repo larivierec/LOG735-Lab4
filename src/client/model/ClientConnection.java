@@ -72,13 +72,17 @@ public class ClientConnection {
     }
 
     public void sendMessage(String textToSend){
-        Object[] arrayToSend = new Object[10];
-        arrayToSend[0] = "IncomingMessage";
-        arrayToSend[1] = textToSend;
-        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
-        arrayToSend[3] = PersistantUser.getInstance().getChatRoom();
-        if(mFutureChannel != null){
-            mFutureChannel.channel().writeAndFlush(arrayToSend);
+
+        if(!textToSend.replaceAll(" ", "").equals("")) {
+
+            Object[] arrayToSend = new Object[10];
+            arrayToSend[0] = "IncomingMessage";
+            arrayToSend[1] = textToSend;
+            arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+            arrayToSend[3] = PersistantUser.getInstance().getChatRoom();
+            if (mFutureChannel != null) {
+                mFutureChannel.channel().writeAndFlush(arrayToSend);
+            }
         }
     }
 

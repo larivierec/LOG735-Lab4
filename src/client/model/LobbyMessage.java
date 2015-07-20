@@ -1,6 +1,7 @@
 package client.model;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -55,6 +56,9 @@ public class LobbyMessage implements Serializable{
 
     @Override
     public String toString(){
-        return getDate() + " " + getUsername() + " : " + getText();
+
+        String formatedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(getDate());
+
+        return "<html><span style='font-size:10px'>"+getUsername() + " : " + getText() + "</span><br><span style='color:#a3a3a3; font-size:6px'>" + formatedDate+"</span><br>&nbsp;</html>";
     }
 }
