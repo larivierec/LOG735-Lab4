@@ -74,6 +74,19 @@ public class LoadBalancingHandler extends ChannelHandlerAdapter{
                 ctx.writeAndFlush(dataToSend);
             }
         }
+        else if(commandID.equals("ServerGoingOffline")){
+            String ip = (String)dataIncoming.getData()[1];
+            Integer port = (Integer)dataIncoming.getData()[2];
+            Message theServer = ChannelManager.getInstance().findServer(ip, port);
+            if(theServer != null){
+                ChannelManager.getInstance().getServerUsage().remove(theServer);
+            }
+        }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
     }
 
     @Override

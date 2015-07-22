@@ -5,9 +5,10 @@ import database.SelectUserQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LoginSystem {
-    private List<User> mLoggedInUsers = new ArrayList<User>();
+    private CopyOnWriteArrayList<User> mLoggedInUsers = new CopyOnWriteArrayList<>();
     public LoginSystem(){}
 
     public User authenticateUser(String username, char[] pw){
@@ -18,6 +19,14 @@ public class LoginSystem {
             return theUser;
         }
         return null;
+    }
+
+    public void logoutUser(User client){
+        for(User c : mLoggedInUsers){
+            if(c.getUsername().equals(client.getUsername())){
+                mLoggedInUsers.remove(c);
+            }
+        }
     }
 
     public List<User> getLoggedInUsers() {

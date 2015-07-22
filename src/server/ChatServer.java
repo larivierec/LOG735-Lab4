@@ -14,7 +14,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerHandler;
-import singleton.ChatRoomManager;
+import threads.UserInputListenerThread;
 
 import java.util.Observable;
 
@@ -70,8 +70,9 @@ public class ChatServer implements IServer{
             });
 
             ChannelFuture clientFuture = clientBootstrap.connect(mIPAddress, mConnectionPortNumber).sync();
-            clientFuture.channel().closeFuture().sync();
+            new UserInputListenerThread(mIPAddress, mListenPortNumber, clientFuture).start();
 
+            clientFuture.channel().closeFuture().sync();
 
         } catch(Exception e){
             e.printStackTrace();

@@ -65,10 +65,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
         } else if (commandID.equals("IncomingMessage")) {
 
             if (!receivedFromServer(ctx.channel())) {
-
                 ChannelManager.getInstance().writeToAllServers(incomingData);
             } else {
-
                 System.out.println("me ");
             }
 
@@ -147,11 +145,8 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             }
         } else if (commandID.equals("CreateChatRoom")) {
 
-
             if (!receivedFromServer(ctx.channel())) {
-
                 Object[] sendRoom = {"CreateChatRoom",(String) incomingData.getData()[1],(String)incomingData.getData()[2],(User)incomingData.getData()[3]};
-
                 ChannelManager.getInstance().writeToAllServers(sendRoom);
             }
 
@@ -209,9 +204,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             ChatRoomManager.getInstance().changeRoom(userToSwitch, newRoom, oldRoom);
 
             for (Channel channel : ChannelManager.getInstance().getClientChannels()) {
-
                 if (ctx.channel().id().asLongText().equals(channel.id().asLongText())) {
-
                     Object[] sendAck = {"AcknowledgeRoomChange", newRoom};
                     ctx.writeAndFlush(sendAck);
                     continue;
@@ -273,7 +266,27 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
                         localRoomToUpdate.setChatRoomMessages(room.getRoomHistory());
                 }
             }
+        } else if(commandID.equals("DisconnectionNotice")){
+            User requestingUser = (User)incomingData.getData()[1];
+            mLoginSystem.logoutUser(requestingUser);
+
+            ChatRoom currentRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
+            ChatRoomManager.getInstance().removeConnectedUser(requestingUser, currentRoom);
+            sendUserInfo(incomingData, currentRoom);
         }
+    }
+
+    public void sendUserInfo(Message incomingData, ChatRoom currentRoom){
+
+        ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+
+        Object[] chatRoomUserListObject = {"RoomUserList", currentRoom, rooms};
+        Message chatRoomUserListSend = new Message(chatRoomUserListObject);
+        ChannelManager.getInstance().writeToAllServers(chatRoomUserListSend);
+
+        Object[] roomListObject = {"RoomList", rooms};
+        Message roomListSend = new Message(roomListObject);
+        ChannelManager.getInstance().writeToAllServers(roomListSend);
     }
 
     public boolean receivedFromServer(Channel channel) {
@@ -281,12 +294,16 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
         for(Channel c : ChannelManager.getInstance().getClientChannels()){
 
             if (c.id().asLongText().equals(channel.id().asLongText())) {
-
                 return false;
             }
         }
 
         return true;
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
     }
 
     @Override

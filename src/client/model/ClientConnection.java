@@ -118,5 +118,15 @@ public class ClientConnection {
         }
     }
 
+    public void sendDisconnectionNotice(){
+        Object[] arrayToSend = new Object[2];
+        arrayToSend[0] = "DisconnectionNotice";
+        arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
+
+        if(mFutureChannel != null){
+            mFutureChannel.channel().writeAndFlush(arrayToSend);
+        }
+    }
+
 
 }

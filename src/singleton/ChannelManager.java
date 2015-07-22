@@ -9,9 +9,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
 import network.ServerToServerConnection;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class ChannelManager {
@@ -24,6 +22,7 @@ public class ChannelManager {
 
     private HashMap<Message, Integer> mServerUsage = new HashMap<Message, Integer>();
     private HashMap<Integer, Integer> mPortMapping = new HashMap<Integer, Integer>();
+    private HashMap<String, Channel>  mServerChannelMap = new HashMap<>();
     private HashMap<String, Channel>  mClientChannelMap = new HashMap<>();
     private ChannelManager(){}
 
@@ -38,14 +37,33 @@ public class ChannelManager {
         return mServerUsage;
     }
 
+    public Message findServer(String serverIP, Integer serverPort){
+        Iterator it = this.mServerUsage.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry localPair = (Map.Entry)it.next();
+            Message serverToCompare = (Message) localPair.getKey();
+
+            if(serverToCompare.getData()[1].equals(serverIP) && serverToCompare.getData()[2].equals(serverPort.toString())){
+                return serverToCompare;
+            }
+        }
+        //if nothing found
+        return null;
+    }
+
     public void addChannel(ChannelHandlerContext c){
         if(!mChannels.contains(c.channel())){
             this.mChannels.add(c.channel());
         }
     }
 
-    public ChannelGroup getChannels(){
+    public void removeChannel(ChannelHandlerContext ctx) {
+        if (mChannels.contains(ctx.channel())) {
+            this.mChannels.remove(ctx.channel());
+        }
+    }
 
+    public ChannelGroup getChannels(){
         return mChannels;
     }
 

@@ -4,6 +4,7 @@ import client.model.ChatRoom;
 import client.model.ClientConnection;
 import client.model.PersistantUser;
 import client.model.User;
+import client.ui.listener.MainFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientHandler;
@@ -13,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowListener;
 import java.util.Observable;
 
 public class MainFrame extends JFrame implements IObserver{
@@ -35,7 +37,6 @@ public class MainFrame extends JFrame implements IObserver{
 
     private ClientConnection mClientConnection;
     private ChatClientHandler mChatClientHandler;
-
 
     public MainFrame(){
 
@@ -87,7 +88,6 @@ public class MainFrame extends JFrame implements IObserver{
         this.setContentPane(mLoginRegistrationPanel);
         this.setSize(700, 700);
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.validate();
         this.repaint();
         this.setResizable(false);
@@ -95,6 +95,7 @@ public class MainFrame extends JFrame implements IObserver{
     }
 
     public void setClientConnection(ClientConnection c){
+        this.addWindowListener(new MainFrameWindowListener(c));
         this.mClientConnection = c;
     }
 

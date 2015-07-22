@@ -55,11 +55,8 @@ public class ChatRoomManager implements IObserver{
     public ChatRoom getChatRoomAssociatedToUser(User e){
         //the mapping of mapping maps
         for (ChatRoom chat : mChatRoomMap.getChatRoomList().values()){
-
             for (String username : chat.getConnectedUsers()) {
-
                 if(e.getUsername().equals(username)) {
-
                     return chat;
                 }
             }
@@ -78,6 +75,10 @@ public class ChatRoomManager implements IObserver{
 
         newRoom.addConnectedUser(e);
         mChatRoomUserMap.put(e.getUsername(), newRoom.getName());
+    }
+
+    public void removeConnectedUser(User r, ChatRoom room){
+        room.removeConnectedUser(r);
     }
 
     public void setChatRoomList(HashMap<String, ChatRoom> theMap){
