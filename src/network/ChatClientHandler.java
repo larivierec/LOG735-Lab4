@@ -1,5 +1,7 @@
 package network;
 
+import client.model.ClientConnection;
+import client.ui.MainFrame;
 import interfaces.IObserver;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
@@ -8,6 +10,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
+import sun.applet.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +23,17 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     private ChatProtocol mChatProtocol = new ChatProtocol();
     private List<IObserver> mObserverList = new ArrayList<IObserver>();
 
+    private String loadAddress;
+    private String loadPort;
+    private MainFrame mainFrame;
+
     public ChatClientHandler(){
+    }
+
+    public ChatClientHandler(String loadAddress, String loadPort, MainFrame mainFrame){
+        this.loadAddress = loadAddress;
+        this.loadPort = loadPort;
+        this.mainFrame = mainFrame;
     }
 
     @Override
@@ -62,6 +75,12 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         System.out.println(cause.getMessage());
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        mainFrame.connectToEndpoint(loadAddress,loadPort);
     }
 
     public void addObserver(IObserver e){

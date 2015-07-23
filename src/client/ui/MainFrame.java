@@ -112,10 +112,7 @@ public class MainFrame extends JFrame implements IObserver{
             if(command.equals("IncorrectAuthentication")){
                 JOptionPane.showMessageDialog(null, "Username or password is incorrect please try again.");
             }else if(command.equals("ServerCoordinates")){
-                ClientConnection tempConnect = new ClientConnection((String)localMessage.getData()[1], (String)localMessage.getData()[2],mChatClientHandler);
-                this.setClientConnection(tempConnect);
-
-                tempConnect.startClient();
+                connectToEndpoint((String)localMessage.getData()[1], (String)localMessage.getData()[2]);
             }else if(command.equals("Authenticated")){
                 User loggedIn = (User) localMessage.getData()[1];
                 ChatRoom theChatRoom = (ChatRoom) localMessage.getData()[2];
@@ -135,9 +132,17 @@ public class MainFrame extends JFrame implements IObserver{
         }
     }
 
+    public void connectToEndpoint(String address, String port) {
+        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
+        this.setClientConnection(tempConnect);
+
+        tempConnect.startClient();
+    }
+
     public static void main(String[]args){
-        ChatClientHandler c = new ChatClientHandler();
+
         MainFrame frame = new MainFrame();
+        ChatClientHandler c = new ChatClientHandler(args[0],args[1],frame);
         c.addObserver(frame);
         ClientConnection conn = new ClientConnection(args[0], args[1],c);
         frame.setClientConnection(conn);

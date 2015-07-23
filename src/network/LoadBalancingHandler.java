@@ -5,6 +5,7 @@ import singleton.ChannelManager;
 
 import io.netty.channel.*;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map;
