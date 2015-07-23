@@ -161,7 +161,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             if (chatRoomPW.equals("") || chatRoomPW.length() == 0) {
                 newRoom = new ChatRoom(chatRoomName);
             } else {
-                newRoom = new ChatRoom(chatRoomName, Utilities.sha256(chatRoomPW.toCharArray()));
+                /**
+                 * the password here is hashed client side so it doesn't need to go through
+                 * the network as plain text
+                 */
+                newRoom = new ChatRoom(chatRoomName, chatRoomPW);
             }
             ChatRoomManager.getInstance().registerChatRoom(newRoom);
             ChatRoom oldRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
