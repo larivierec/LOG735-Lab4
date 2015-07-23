@@ -27,11 +27,22 @@ public class UserManager {
         this.mLoggedInUsers.put(e.getUsername(), e);
     }
 
+    public void removeUser(User e){
+        this.mLoggedInUsers.remove(e.getUsername());
+    }
+
     public User getUser(User e){
         return mLoggedInUsers.get(e.getUsername());
     }
 
+    public User getUser(String e){
+        return mLoggedInUsers.get(e);
+    }
+
     public HashMap<String, User> getLoggedInUsers(){
         return mLoggedInUsers;
+    }
+
+    private void notifyServers(User e){
     }
 }

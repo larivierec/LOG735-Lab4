@@ -1,31 +1,25 @@
 package network;
 
-import client.model.ChatRoom;
-import client.model.LobbyMessage;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import client.model.*;
 import io.netty.channel.Channel;
 import server.LoginSystem;
-import client.model.User;
 import io.netty.channel.*;
 import messages.Message;
 import singleton.ChannelManager;
 import singleton.ChatRoomManager;
+import singleton.PrivateSessionManager;
 import singleton.UserManager;
-import util.Utilities;
 
-import java.nio.channels.*;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter {
-
-    private CopyOnWriteArrayList<String> messagesReceived = new CopyOnWriteArrayList<>();
 
     private ChatProtocol mChatProtocol = new ChatProtocol();
 
     private ChatRoomManager mChatRoomManager = ChatRoomManager.getInstance();
     private UserManager mUserManager = UserManager.getInstance();
+    private PrivateSessionManager mPrivateSessionManager = PrivateSessionManager.getInstance();
     private LoginSystem mLoginSystem = new LoginSystem();
 
     private Integer mListenPort;
@@ -73,10 +67,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             User messageSender = (User) incomingData.getData()[2];
             ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
 
-            if (incomingData.getData()[3] == null) {
-                incomingData.getData()[0] = "PrivateMessage";
-            }
-
             //if any of these are null there was a problem sending the data
             if (incomingData.getData()[2] != null && room != null) {
                 String text = (String) incomingData.getData()[1];
@@ -110,11 +100,16 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
 
                     if(mUserManager.getUser(temp) == null) {
                         mUserManager.addUser(temp);
+                        ChannelManager.getInstance().writeToAllServers(new Object[]{"NewConnectedUser", temp});
                     }
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom, ChatRoomManager.getInstance().getChatRoomAssociatedToUser(temp));
 
                     Object[] array = {"Authenticated", temp, theSelectedRoom};
                     ctx.writeAndFlush(array);
+
+                    /**
+                     * Register the username with the channel on the server.
+                     */
                     ChannelManager.getInstance().clientChannelAssociate(temp, ctx.channel());
 
                     Object[] chatRoomUserListObject = {"RoomUserList", theSelectedRoom, rooms};
@@ -283,11 +278,76 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             }
         } else if(commandID.equals("DisconnectionNotice")){
             User requestingUser = (User)incomingData.getData()[1];
+            this.mUserManager.removeUser(requestingUser);
             mLoginSystem.logoutUser(requestingUser);
 
+            //Disconnect user from other servers
+            ChannelManager.getInstance().writeToAllServers(new Object[]{"DisconnectedUser", requestingUser});
+
+            //Update all chatrooms removing the disconnected user
             ChatRoom currentRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
             ChatRoomManager.getInstance().removeConnectedUser(requestingUser, currentRoom);
+
+            //send rooms
             sendUserInfo(incomingData, currentRoom);
+        } else if(commandID.equals("NewConnectedUser")){
+            User t = (User) incomingData.getData()[1];
+            this.mUserManager.addUser(t);
+        } else if(commandID.equals("DisconnectedUser")){
+            User t = (User) incomingData.getData()[1];
+            this.mUserManager.removeUser(t);
+        } else if(commandID.equals("InitiatePrivateSession")){
+            User requestingUser = (User)incomingData.getData()[1];
+            ArrayList<String> otherUsers = (ArrayList) incomingData.getData()[2];
+            ArrayList<User> tempUserList = new ArrayList<>();
+            for (String username : otherUsers) {
+                User u = UserManager.getInstance().getUser(username);
+                tempUserList.add(u);
+            }
+            incomingData.getData()[2] = tempUserList;
+            PrivateSession session = new PrivateSession(tempUserList);
+
+            Object[] arrayToSend = new Object[2];
+            arrayToSend[0] = "PrivateSessionRequest";
+            arrayToSend[1] = session;
+
+            mPrivateSessionManager.addSession(session);
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), arrayToSend);
+            });
+
+            ChannelManager.getInstance().writeToAllServers(arrayToSend);
+        } else if(commandID.equals("PrivateSessionRequest")){
+            PrivateSession session = (PrivateSession)incomingData.getData()[1];
+            mPrivateSessionManager.setNextSessionID(session.getSessionID());
+            mPrivateSessionManager.addSession(session);
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData);
+            });
+        } else if(commandID.equals("PrivateMessage")){
+            incomingData.getData()[0] = "ClientPrivateMessage";
+
+            PrivateSession session = (PrivateSession)incomingData.getData()[1];
+            User sendingUser = (User) incomingData.getData()[2];
+            String messageSend = (String) incomingData.getData()[3];
+
+            PrivateMessage messageToSend = new PrivateMessage(sendingUser.getUsername(), messageSend, session);
+            incomingData.getData()[1] = messageToSend;
+            incomingData.getData()[2] = null;
+            incomingData.getData()[3] = null;
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData);
+            });
+            ChannelManager.getInstance().writeToAllServers(incomingData);
+        } else if(commandID.equals("ClientPrivateMessage")){
+            incomingData.getData()[0] = "ClientPrivateMessage";
+            PrivateMessage message = (PrivateMessage) incomingData.getData()[1];
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
+                    ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData));
         }
     }
 
@@ -307,7 +367,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
     public boolean receivedFromServer(Channel channel) {
 
         for(Channel c : ChannelManager.getInstance().getClientChannels()){
-
             if (c.id().asLongText().equals(channel.id().asLongText())) {
                 return false;
             }

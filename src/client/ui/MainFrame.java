@@ -37,7 +37,7 @@ public class MainFrame extends AbstractFrame implements IObserver{
 
     public MainFrame(){
 
-        mChatPanel = new ChatPanel();
+        mChatPanel = new ChatPanel(this);
         this.setTitle("WOW! ChatServer");
         mLoginRegistrationPanel.setLayout(new BorderLayout());
         mLoginRegistrationPanel.setSize(550, 550);
@@ -101,6 +101,21 @@ public class MainFrame extends AbstractFrame implements IObserver{
         c.addObserver(mChatPanel);
     }
 
+    public ClientConnection getClientConnection(){
+        return mClientConnection;
+    }
+
+    public ChatClientHandler getHandler(){
+        return mChatClientHandler;
+    }
+
+    public void connectToEndpoint(String address, String port) {
+        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
+        this.setClientConnection(tempConnect);
+
+        tempConnect.startClient();
+    }
+
     @Override
     public void update(Observable e, Object t) {
         if(t instanceof Message){
@@ -129,26 +144,15 @@ public class MainFrame extends AbstractFrame implements IObserver{
         }
     }
 
-    public void connectToEndpoint(String address, String port) {
-        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
-        this.setClientConnection(tempConnect);
-
-        tempConnect.startClient();
-    }
-
     public static void main(String[]args){
 
         MainFrame frame = new MainFrame();
 
         ChatClientHandler c = new ChatClientHandler(args[0],args[1],frame);
         c.addObserver(frame);
-        ClientConnection conn = new ClientConnection(args[0], args[1],c);
+        ClientConnection conn = new ClientConnection(args[0], args[1], c);
         frame.setClientConnection(conn);
         frame.setChatClientHandler(c);
-
-        //test frameview
-        PrivateMessageFrame privateFrame = new PrivateMessageFrame();
-
         conn.startClient();
     }
 

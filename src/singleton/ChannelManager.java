@@ -85,6 +85,9 @@ public class ChannelManager {
         return mClientChannels;
     }
 
+    public HashMap<String, Channel> getClientChanneMap(){
+        return mClientChannelMap;
+    }
 
     public void addClientChannel(Channel channel) {
         mClientChannels.add(channel);
@@ -101,6 +104,13 @@ public class ChannelManager {
     }
 
 
+    public void writeToClientChannel(User e, Object[] data){
+        mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
+    }
+    public void writeToClientChannel(User e, Message data){
+        mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
+    }
+
     public void writeToAllServers(Object[] data){
         for(ServerToServerConnection conn : mServerToServerMap){
             conn.getChannel().writeAndFlush(data);
@@ -108,9 +118,8 @@ public class ChannelManager {
     }
 
     public void writeToAllServers(Message data){
-
         for(ServerToServerConnection conn : mServerToServerMap){
-            System.out.println("server : "+mServerToServerMap.size());
+            System.out.println("server : " + mServerToServerMap.size());
 
             conn.getChannel().writeAndFlush(data);
         }
@@ -123,13 +132,10 @@ public class ChannelManager {
     }
 
     public void writeToAllClients(Message data){
-
         System.out.println(mClientChannels.size());
         for(Channel c : mClientChannels){
             c.writeAndFlush(data);
             System.out.println("test"+c.id().asShortText());
-
         }
     }
-
 }
