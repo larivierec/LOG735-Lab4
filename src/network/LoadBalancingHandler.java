@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map;
 
+@Deprecated
 public class LoadBalancingHandler extends ChannelHandlerAdapter{
 
     private final LoadBalancingProtocol mLoadBalancingProtocol = new LoadBalancingProtocol();

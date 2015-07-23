@@ -11,6 +11,8 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatClientHandler;
+import network.ChatClientSslHandler;
+import server.SSLFactory;
 import util.Utilities;
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class ClientConnection {
     private String mRoom;
     private ChannelFuture mFutureChannel;
     private ChatClientHandler mChatClientHandler;
+    private ChatClientSslHandler clientSslHandler;
 
     public ClientConnection(String ipAddr, int portNumber, User user, String roomName) {
         this.mIPAddress = ipAddr;
@@ -38,6 +41,12 @@ public class ClientConnection {
         this.mConnectionPortNumber = Integer.parseInt(portNumber);
         mChatClientHandler = c;
     }
+    public ClientConnection(String ipAddr, String portNumber, ChatClientSslHandler c) {
+        this.mIPAddress = ipAddr;
+        this.mConnectionPortNumber = Integer.parseInt(portNumber);
+        clientSslHandler = c;
+    }
+
 
     public void startClient(){
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -50,10 +59,13 @@ public class ClientConnection {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
+
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(mChatClientHandler);
+
+                    ch.pipeline().addLast("ssl", clientSslHandler);
+
                 }
             });
 

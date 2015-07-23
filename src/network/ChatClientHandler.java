@@ -1,6 +1,5 @@
 package network;
 
-import client.model.ClientConnection;
 import client.ui.MainFrame;
 import interfaces.IObserver;
 import io.netty.channel.ChannelHandler;
@@ -10,12 +9,12 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import messages.Message;
-import sun.applet.Main;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
+@Deprecated
 @ChannelHandler.Sharable
 public class ChatClientHandler extends ChannelHandlerAdapter{
 
@@ -28,6 +27,7 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
     private MainFrame mainFrame;
 
     public ChatClientHandler(){
+
     }
 
     public ChatClientHandler(String loadAddress, String loadPort, MainFrame mainFrame){

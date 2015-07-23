@@ -13,13 +13,14 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import network.LoadBalancingHandler;
+import io.netty.handler.ssl.SslHandler;
+import network.LoadBalancingSSLHandler;
 
 import java.util.Observable;
 
 public class LoadBalancerServer implements IServer{
 
-    private String      mIPAddress;
+    private String  mIPAddress;
     private Integer mPortNumber;
 
     public LoadBalancerServer(String ipAddr, int portNumber){
@@ -31,17 +32,20 @@ public class LoadBalancerServer implements IServer{
     public void startServer() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
+
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
+
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                             ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                             ch.pipeline().addLast(new ObjectEncoder());
-                            ch.pipeline().addLast(new LoadBalancingHandler());
+                            ch.pipeline().addLast("ssl", new LoadBalancingSSLHandler(SSLFactory.getSSLEngine()));
+                            //ch.pipeline().addLast(new LoadBalancingHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

@@ -1,9 +1,11 @@
 package server;
 
-import client.model.ChatRoom;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -13,7 +15,7 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import network.ChatServerHandler;
+import network.ChatServerSSLHandler;
 import threads.UserInputListenerThread;
 
 import java.util.Observable;
@@ -34,7 +36,7 @@ public class ChatServer implements IServer{
     public void startServer() {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber);
+        //final ChatServerHandler serverHandler = new ChatServerHandler(this.mIPAddress, this.mListenPortNumber);
 
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -43,10 +45,13 @@ public class ChatServer implements IServer{
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
+
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                             ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                             ch.pipeline().addLast(new ObjectEncoder());
-                            ch.pipeline().addLast(serverHandler);
+                            ch.pipeline().addLast("ssl", new ChatServerSSLHandler(mIPAddress, mListenPortNumber,SSLFactory.getSSLEngine()));
+
+
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
@@ -65,7 +70,8 @@ public class ChatServer implements IServer{
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-                    ch.pipeline().addLast(serverHandler);
+                    ch.pipeline().addLast("ssl", new ChatServerSSLHandler(mIPAddress, mListenPortNumber,SSLFactory.getSSLEngine()));
+                    //ch.pipeline().addLast(serverHandler);
                 }
             });
 

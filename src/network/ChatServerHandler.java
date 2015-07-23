@@ -4,6 +4,7 @@ import client.model.ChatRoom;
 import client.model.LobbyMessage;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.netty.channel.Channel;
+import io.netty.handler.ssl.SslHandler;
 import server.LoginSystem;
 import client.model.User;
 import io.netty.channel.*;
@@ -17,6 +18,7 @@ import java.nio.channels.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Deprecated
 @ChannelHandler.Sharable
 public class ChatServerHandler extends ChannelHandlerAdapter {
 
@@ -30,6 +32,11 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
 
     private Integer mListenPort;
     private String mIPAddress;
+    private SslHandler sslHandler;
+
+    public void setSslHandler(SslHandler sslHandler) {
+        this.sslHandler = sslHandler;
+    }
 
     public ChatServerHandler(String ipAddr, Integer listenPort) {
         this.mIPAddress = ipAddr;

@@ -127,8 +127,6 @@ public class ChannelManager {
         System.out.println(mClientChannels.size());
         for(Channel c : mClientChannels){
             c.writeAndFlush(data);
-            System.out.println("test"+c.id().asShortText());
-
         }
     }
 

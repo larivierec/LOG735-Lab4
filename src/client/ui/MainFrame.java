@@ -8,6 +8,8 @@ import client.ui.listener.MainFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientHandler;
+import network.ChatClientSslHandler;
+import server.SSLFactory;
 import util.*;
 
 import javax.swing.*;
@@ -36,7 +38,7 @@ public class MainFrame extends JFrame implements IObserver{
     private JButton mButtonLogin = new JButton();
 
     private ClientConnection mClientConnection;
-    private ChatClientHandler mChatClientHandler;
+    private ChatClientSslHandler mChatClientHandler;
 
     public MainFrame(){
 
@@ -99,7 +101,7 @@ public class MainFrame extends JFrame implements IObserver{
         this.mClientConnection = c;
     }
 
-    public void setChatClientHandler(ChatClientHandler c){
+    public void setChatClientHandler(ChatClientSslHandler c){
         this.mChatClientHandler = c;
         c.addObserver(mChatPanel);
     }
@@ -133,22 +135,36 @@ public class MainFrame extends JFrame implements IObserver{
     }
 
     public void connectToEndpoint(String address, String port) {
-        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
-        this.setClientConnection(tempConnect);
+        try {
 
-        tempConnect.startClient();
+            mChatClientHandler = new ChatClientSslHandler(address,port, this, SSLFactory.getSSLEngine());
+            mChatClientHandler.addObserver(this);
+            ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
+            this.setChatClientHandler(mChatClientHandler);
+            this.setClientConnection(tempConnect);
+
+            tempConnect.startClient();
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
     }
 
     public static void main(String[]args){
 
-        MainFrame frame = new MainFrame();
-        ChatClientHandler c = new ChatClientHandler(args[0],args[1],frame);
-        c.addObserver(frame);
-        ClientConnection conn = new ClientConnection(args[0], args[1],c);
-        frame.setClientConnection(conn);
-        frame.setChatClientHandler(c);
+        try {
+            MainFrame frame = new MainFrame();
+            ChatClientSslHandler c = new ChatClientSslHandler(args[0], args[1], frame, SSLFactory.getSSLEngine());
+            c.addObserver(frame);
+            ClientConnection conn = new ClientConnection(args[0], args[1], c);
+            frame.setClientConnection(conn);
+            frame.setChatClientHandler(c);
 
-        conn.startClient();
+            conn.startClient();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
