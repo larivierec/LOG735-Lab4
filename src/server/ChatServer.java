@@ -17,6 +17,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import network.ChatServerSSLHandler;
 import threads.UserInputListenerThread;
+import util.SSLFactory;
 
 import java.util.Observable;
 
@@ -49,7 +50,7 @@ public class ChatServer implements IServer{
                             ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                             ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                             ch.pipeline().addLast(new ObjectEncoder());
-                            ch.pipeline().addLast("ssl", new ChatServerSSLHandler(mIPAddress, mListenPortNumber,SSLFactory.getSSLEngine()));
+                            ch.pipeline().addLast("ssl", new ChatServerSSLHandler(mIPAddress, mListenPortNumber, SSLFactory.getSSLEngine()));
 
 
                         }

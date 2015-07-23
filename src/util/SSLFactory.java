@@ -1,15 +1,9 @@
-package server;
-
-import io.netty.handler.ssl.SslHandler;
-import network.LoadBalancingSSLHandler;
+package util;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 
-/**
- * Created by d.budka on 2015-07-23.
- */
 public class SSLFactory {
     public static SSLEngine getSSLEngine() throws Exception{
 

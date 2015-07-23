@@ -8,7 +8,7 @@ import client.ui.listener.MainFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientSslHandler;
-import server.SSLFactory;
+import util.SSLFactory;
 import util.*;
 
 import javax.swing.*;

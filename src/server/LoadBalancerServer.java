@@ -13,8 +13,8 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.ssl.SslHandler;
 import network.LoadBalancingSSLHandler;
+import util.SSLFactory;
 
 import java.util.Observable;
 
