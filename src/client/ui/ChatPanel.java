@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatPanel extends JPanel implements IObserver {
 
@@ -36,8 +37,11 @@ public class ChatPanel extends JPanel implements IObserver {
     private JTextField mCreateRoomField = new JTextField();
     private JPasswordField mCreateRoomPassField = new JPasswordField();
     private JButton mCreateRoomButton = new JButton("Create Room");
+
+    private CopyOnWriteArrayList mListOfPrivateFrames = new CopyOnWriteArrayList<PrivateMessageFrame>();
+
     private String presentRoomName = "";
-    JScrollPane scrollPane;
+    private JScrollPane scrollPane;
 
     public ChatPanel() {
         JListRenderer j = new JListRenderer();
@@ -79,6 +83,7 @@ public class ChatPanel extends JPanel implements IObserver {
 
         mRoomList.addMouseListener(new PopClickListener());
 
+        mClientList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         mRoomList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mChatHistory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -190,9 +195,7 @@ public class ChatPanel extends JPanel implements IObserver {
     }
 
     private void populateUserList(List<ChatRoom> list) {
-        for(ChatRoom chatRoom : list) {
-            populateUserList(chatRoom);
-        }
+        list.forEach(this::populateUserList);
     }
 
     public void setClientConnection(ClientConnection c, ChatRoom chatRoom) {

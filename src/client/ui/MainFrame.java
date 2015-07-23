@@ -17,7 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
 import java.util.Observable;
 
-public class MainFrame extends JFrame implements IObserver{
+public class MainFrame extends AbstractFrame implements IObserver{
 
     private RegisterPanel mRegistrationPanel = new RegisterPanel();
     private ChatPanel     mChatPanel;
@@ -34,9 +34,6 @@ public class MainFrame extends JFrame implements IObserver{
 
     private JButton mButtonRegister = new JButton();
     private JButton mButtonLogin = new JButton();
-
-    private ClientConnection mClientConnection;
-    private ChatClientHandler mChatClientHandler;
 
     public MainFrame(){
 
@@ -142,11 +139,15 @@ public class MainFrame extends JFrame implements IObserver{
     public static void main(String[]args){
 
         MainFrame frame = new MainFrame();
+
         ChatClientHandler c = new ChatClientHandler(args[0],args[1],frame);
         c.addObserver(frame);
         ClientConnection conn = new ClientConnection(args[0], args[1],c);
         frame.setClientConnection(conn);
         frame.setChatClientHandler(c);
+
+        //test frameview
+        PrivateMessageFrame privateFrame = new PrivateMessageFrame();
 
         conn.startClient();
     }
