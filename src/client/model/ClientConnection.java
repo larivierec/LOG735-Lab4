@@ -10,13 +10,10 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import network.ChatClientHandler;
 import network.ChatClientSslHandler;
-import server.SSLFactory;
 import util.Utilities;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ClientConnection {
 
@@ -27,7 +24,6 @@ public class ClientConnection {
     private String mPass;
     private String mRoom;
     private ChannelFuture mFutureChannel;
-    private ChatClientHandler mChatClientHandler;
     private ChatClientSslHandler clientSslHandler;
 
     public ClientConnection(String ipAddr, int portNumber, User user, String roomName) {
@@ -35,12 +31,6 @@ public class ClientConnection {
         this.mConnectionPortNumber = portNumber;
         this.mUser = user;
         this.mRoom = roomName;
-    }
-
-    public ClientConnection(String ipAddr, String portNumber, ChatClientHandler c) {
-        this.mIPAddress = ipAddr;
-        this.mConnectionPortNumber = Integer.parseInt(portNumber);
-        mChatClientHandler = c;
     }
     public ClientConnection(String ipAddr, String portNumber, ChatClientSslHandler c) {
         this.mIPAddress = ipAddr;
@@ -64,7 +54,6 @@ public class ClientConnection {
                     ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
                     ch.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     ch.pipeline().addLast(new ObjectEncoder());
-
                     ch.pipeline().addLast("ssl", clientSslHandler);
 
                 }

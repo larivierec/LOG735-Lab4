@@ -6,7 +6,7 @@ import client.model.PrivateSession;
 import client.model.User;
 import interfaces.IObserver;
 import messages.Message;
-import network.ChatClientHandler;
+import network.ChatClientSslHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +32,7 @@ public class PrivateMessageFrame extends AbstractFrame implements IObserver {
 
     private PrivateMessageFrame(){}
 
-    public PrivateMessageFrame(ArrayList<User> userList, ClientConnection c, ChatClientHandler handler) {
+    public PrivateMessageFrame(ArrayList<User> userList, ClientConnection c, ChatClientSslHandler handler) {
         super.setClientConnection(c);
         setChatClientHandler(handler);
         userList.forEach(user -> mClientListModel.addElement(user.getUsername()));
@@ -64,7 +64,7 @@ public class PrivateMessageFrame extends AbstractFrame implements IObserver {
     }
 
     @Override
-    public void setChatClientHandler(ChatClientHandler c) {
+    public void setChatClientHandler(ChatClientSslHandler c) {
         this.mChatClientHandler = c;
         mChatClientHandler.addObserver(this);
     }

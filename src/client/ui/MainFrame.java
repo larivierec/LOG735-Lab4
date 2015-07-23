@@ -7,14 +7,12 @@ import client.model.User;
 import client.ui.listener.MainFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
-import network.ChatClientHandler;
+import network.ChatClientSslHandler;
+import server.SSLFactory;
 import util.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowListener;
 import java.util.Observable;
 
 public class MainFrame extends AbstractFrame implements IObserver{
@@ -105,15 +103,24 @@ public class MainFrame extends AbstractFrame implements IObserver{
         return mClientConnection;
     }
 
-    public ChatClientHandler getHandler(){
+    public ChatClientSslHandler getHandler(){
         return mChatClientHandler;
     }
 
     public void connectToEndpoint(String address, String port) {
-        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
-        this.setClientConnection(tempConnect);
+        try {
 
-        tempConnect.startClient();
+            mChatClientHandler = new ChatClientSslHandler(address,port, this, SSLFactory.getSSLEngine());
+            mChatClientHandler.addObserver(this);
+            ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
+            this.setChatClientHandler(mChatClientHandler);
+            this.setClientConnection(tempConnect);
+
+            tempConnect.startClient();
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -142,23 +149,6 @@ public class MainFrame extends AbstractFrame implements IObserver{
                 repaint();
             }
         }
-    }
-
-    public void connectToEndpoint(String address, String port) {
-        try {
-
-            mChatClientHandler = new ChatClientSslHandler(address,port, this, SSLFactory.getSSLEngine());
-            mChatClientHandler.addObserver(this);
-            ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
-            this.setChatClientHandler(mChatClientHandler);
-            this.setClientConnection(tempConnect);
-
-            tempConnect.startClient();
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
     }
 
     public static void main(String[]args){

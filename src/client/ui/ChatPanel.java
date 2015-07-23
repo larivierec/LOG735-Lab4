@@ -269,8 +269,7 @@ public class ChatPanel extends JPanel implements IObserver {
         JMenuItem anItem;
         public JoinRoomMenu(){
             anItem = new JMenuItem("Join Lobby");
-
-            anItem.addActionListener(e -> mClientConnection.initiatePrivateMessage(getUsersFromModel()));
+            //anItem.addActionListener(e -> mClientConnection.sendSwitchRoom());
             add(anItem);
         }
     }

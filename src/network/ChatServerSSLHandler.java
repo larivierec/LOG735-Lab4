@@ -1,33 +1,28 @@
 package network;
 
-import client.model.ChatRoom;
-import client.model.LobbyMessage;
-import client.model.User;
-import com.sun.xml.internal.ws.api.pipe.Engine;
+import client.model.*;
+
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.ssl.SslHandler;
 import messages.Message;
 import server.LoginSystem;
 import singleton.ChannelManager;
 import singleton.ChatRoomManager;
+import singleton.PrivateSessionManager;
 import singleton.UserManager;
 import util.Utilities;
 
 import javax.net.ssl.SSLEngine;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class ChatServerSSLHandler extends SslHandler {
 
-    private CopyOnWriteArrayList<String> messagesReceived = new CopyOnWriteArrayList<>();
-
     private ChatProtocol mChatProtocol = new ChatProtocol();
 
     private ChatRoomManager mChatRoomManager = ChatRoomManager.getInstance();
+    private PrivateSessionManager mPrivateSessionManager = PrivateSessionManager.getInstance();
     private UserManager mUserManager = UserManager.getInstance();
     private LoginSystem mLoginSystem = new LoginSystem();
 
@@ -118,6 +113,7 @@ public class ChatServerSSLHandler extends SslHandler {
 
                     if(mUserManager.getUser(temp) == null) {
                         mUserManager.addUser(temp);
+                        ChannelManager.getInstance().writeToAllServers(new Object[]{"NewConnectedUser", temp});
                     }
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom, ChatRoomManager.getInstance().getChatRoomAssociatedToUser(temp));
 
@@ -292,6 +288,62 @@ public class ChatServerSSLHandler extends SslHandler {
             ChatRoom currentRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
             ChatRoomManager.getInstance().removeConnectedUser(requestingUser, currentRoom);
             sendUserInfo(incomingData, currentRoom);
+        } else if(commandID.equals("NewConnectedUser")){
+            User t = (User) incomingData.getData()[1];
+            this.mUserManager.addUser(t);
+        } else if(commandID.equals("DisconnectedUser")){
+            User t = (User) incomingData.getData()[1];
+            this.mUserManager.removeUser(t);
+        } else if(commandID.equals("InitiatePrivateSession")){
+            User requestingUser = (User)incomingData.getData()[1];
+            ArrayList<String> otherUsers = (ArrayList) incomingData.getData()[2];
+            ArrayList<User> tempUserList = new ArrayList<>();
+            for (String username : otherUsers) {
+                User u = UserManager.getInstance().getUser(username);
+                tempUserList.add(u);
+            }
+            incomingData.getData()[2] = tempUserList;
+            PrivateSession session = new PrivateSession(tempUserList);
+
+            Object[] arrayToSend = new Object[2];
+            arrayToSend[0] = "PrivateSessionRequest";
+            arrayToSend[1] = session;
+
+            mPrivateSessionManager.addSession(session);
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), arrayToSend);
+            });
+
+            ChannelManager.getInstance().writeToAllServers(arrayToSend);
+        } else if(commandID.equals("PrivateSessionRequest")){
+            PrivateSession session = (PrivateSession)incomingData.getData()[1];
+            mPrivateSessionManager.setNextSessionID(session.getSessionID());
+            mPrivateSessionManager.addSession(session);
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData);
+            });
+        } else if(commandID.equals("PrivateMessage")){
+            incomingData.getData()[0] = "ClientPrivateMessage";
+
+            PrivateSession session = (PrivateSession)incomingData.getData()[1];
+            User sendingUser = (User) incomingData.getData()[2];
+            String messageSend = (String) incomingData.getData()[3];
+
+            PrivateMessage messageToSend = new PrivateMessage(sendingUser.getUsername(), messageSend, session);
+            incomingData.getData()[1] = messageToSend;
+            incomingData.getData()[2] = null;
+            incomingData.getData()[3] = null;
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
+                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData);
+            });
+            ChannelManager.getInstance().writeToAllServers(incomingData);
+        } else if(commandID.equals("ClientPrivateMessage")){
+            incomingData.getData()[0] = "ClientPrivateMessage";
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
+                    ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData));
         }
     }
 
