@@ -18,6 +18,7 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     public ChatRoom(String roomName){
         this.name = roomName;
+        this.password = "";
     }
 
     public ChatRoom(String name, String password) {

@@ -69,15 +69,12 @@ public class ChatPanel extends JPanel implements IObserver {
                 }
         );
 
-        mCreateRoomButton.addActionListener(e -> {
-            mClientConnection.sendCreateRoom(mCreateRoomField.getText(), mCreateRoomPassField.getPassword());
-        });
+        mCreateRoomButton.addActionListener(e -> mClientConnection.sendCreateRoom(mCreateRoomField.getText(), mCreateRoomPassField.getPassword()));
 
         mRoomList.addListSelectionListener(e -> {
             JList list = (JList) e.getSource();
             String roomName = mRoomListModel.getElementAt(list.getSelectedIndex());
             mClientConnection.sendSwitchRoom(roomName);
-            System.out.println("listen");
         });
 
         mRoomList.addMouseListener(new PopClickListener());
@@ -94,7 +91,6 @@ public class ChatPanel extends JPanel implements IObserver {
         this.add(mCurrentLobbyLabel);
         this.add(mCurrentLobby);
         this.add(scrollPane);
-        //this.add(mChatHistory);
         this.add(mTextArea);
         this.add(mSendMessageButton);
         this.add(mCreateRoomField);
@@ -133,20 +129,19 @@ public class ChatPanel extends JPanel implements IObserver {
                 mRoomListModel.clear();
 
                 for (int i = 0; i < roomList.size(); i++) {
-                    mRoomListModel.addElement(roomList.get(i).getName());
+                    ChatRoom localRoom = roomList.get(i);
+                    String writeToList = localRoom.getName();
+                    mRoomListModel.addElement(writeToList);
                     populateUserList(roomList.get(i));
                 }
 
             } else if (command.equals("LobbyMessage")) {
-
                 LobbyMessage theLobbyMessage = (LobbyMessage) localMessage.getData()[1];
                 if (PersistantUser.getInstance().getChatRoom().getName().equals(theLobbyMessage.getLobbyName()))
                     mChatHistoryModel.addElement(theLobbyMessage.toString());
             } else if (command.equals("MessagesInRoom")) {
                 ArrayList<LobbyMessage> messages = (ArrayList<LobbyMessage>) localMessage.getData()[1];
-                messages.forEach(lobbyMessage -> {
-                    mChatHistoryModel.addElement(lobbyMessage.toString());
-                });
+                messages.forEach(lobbyMessage -> mChatHistoryModel.addElement(lobbyMessage.toString()));
             } else if (command.equals("NewChatRoom")) {
                 ChatRoom incomingRoom = (ChatRoom) localMessage.getData()[1];
                 populateUserList(incomingRoom);
@@ -172,7 +167,9 @@ public class ChatPanel extends JPanel implements IObserver {
             } else if (command.equals("RequestPassword")){
                 ChatRoom roomToConnectTo = (ChatRoom) localMessage.getData()[1];
                 String enteredText = JOptionPane.showInputDialog(this,"Enter a password");
-                mClientConnection.sendSwitchRoom(roomToConnectTo.getName(), Utilities.sha256(enteredText.toCharArray()));
+                if(enteredText.length() != 0){
+                    mClientConnection.sendSwitchRoom(roomToConnectTo.getName(), Utilities.sha256(enteredText.toCharArray()));
+                }
             }
         }
     }
