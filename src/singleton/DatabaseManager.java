@@ -22,7 +22,8 @@ public class DatabaseManager {
             new DatabaseManager();
         }
         try {
-            instance = DriverManager.getConnection("jdbc:mysql://www.scanetworks.com/scanet_loginDatabase?user=scanet_log735&password=log735");
+            instance = DriverManager.getConnection("jdbc:mysql://db.scanetworks.com/scanet_loginDatabase?user=scanet_log735&password=log735");
+            //instance = DriverManager.getConnection("jdbc:mysql://localhost/scanet_loginDatabase?user=root");
         }catch(Exception e){
             e.printStackTrace();
         }

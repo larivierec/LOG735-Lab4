@@ -27,6 +27,10 @@ public class UserManager {
         this.mLoggedInUsers.put(e.getUsername(), e);
     }
 
+    public User getUser(User e){
+        return mLoggedInUsers.get(e.getUsername());
+    }
+
     public HashMap<String, User> getLoggedInUsers(){
         return mLoggedInUsers;
     }

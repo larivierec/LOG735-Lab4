@@ -108,7 +108,9 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
 
                     ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
 
-                    mUserManager.addUser(temp);
+                    if(mUserManager.getUser(temp) == null) {
+                        mUserManager.addUser(temp);
+                    }
                     ChatRoomManager.getInstance().changeRoom(temp, theSelectedRoom, ChatRoomManager.getInstance().getChatRoomAssociatedToUser(temp));
 
                     Object[] array = {"Authenticated", temp, theSelectedRoom};
@@ -188,35 +190,51 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
 
 
         } else if (commandID.equals("SwitchRoom")) {
+            boolean canSwitch = false;
 
             if (!receivedFromServer(ctx.channel())) {
-
                 ChannelManager.getInstance().writeToAllServers(incomingData);
             }
 
 
             User userToSwitch = (User) incomingData.getData()[1];
             String roomToSwitch = (String) incomingData.getData()[2];
+            String password = "";
+            if(incomingData.getData()[3] != null){
+                 password = Utilities.sha256(((String) incomingData.getData()[3]).toCharArray());
+            }
 
             ChatRoom oldRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(userToSwitch);
             ChatRoom newRoom = ChatRoomManager.getInstance().getChatRoom(roomToSwitch);
 
-            ChatRoomManager.getInstance().changeRoom(userToSwitch, newRoom, oldRoom);
-
-            for (Channel channel : ChannelManager.getInstance().getClientChannels()) {
-                if (ctx.channel().id().asLongText().equals(channel.id().asLongText())) {
-                    Object[] sendAck = {"AcknowledgeRoomChange", newRoom};
-                    ctx.writeAndFlush(sendAck);
-                    continue;
+            if(newRoom.getPassword().length() != 0){
+                if(newRoom.getPassword().equals(password)){
+                    canSwitch = true;
+                }else{
+                    Object[] passwordNeeded = {"RequestPassword", newRoom};
+                    ctx.writeAndFlush(passwordNeeded);
                 }
+            }else {
+                canSwitch = true;
             }
 
-            List<ChatRoom> roomList = new ArrayList<>();
+            if(canSwitch){
+                ChatRoomManager.getInstance().changeRoom(userToSwitch, newRoom, oldRoom);
+                for (Channel channel : ChannelManager.getInstance().getClientChannels()) {
+                    if (ctx.channel().id().asLongText().equals(channel.id().asLongText())) {
+                        Object[] sendAck = {"AcknowledgeRoomChange", newRoom};
+                        ctx.writeAndFlush(sendAck);
+                        continue;
+                    }
+                }
 
-            roomList.addAll(ChatRoomManager.getInstance().getChatRoomList().values());
+                List<ChatRoom> roomList = new ArrayList<>();
 
-            Object[] sendNewRoom = {"ChangeRoom", roomList};
-            ChannelManager.getInstance().writeToAllClients(sendNewRoom);
+                roomList.addAll(ChatRoomManager.getInstance().getChatRoomList().values());
+
+                Object[] sendNewRoom = {"ChangeRoom", roomList};
+                ChannelManager.getInstance().writeToAllClients(sendNewRoom);
+            }
 
         } else if (commandID.equals("RoomUserList")) {
 

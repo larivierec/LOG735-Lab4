@@ -169,6 +169,8 @@ public class ChatPanel extends JPanel implements IObserver {
                 for (LobbyMessage message : room.getRoomHistory()) {
                     this.mChatHistoryModel.addElement(message.toString());
                 }
+            } else if (command.equals("RequestPassword")){
+
             }
         }
     }
