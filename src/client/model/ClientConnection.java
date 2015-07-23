@@ -118,6 +118,18 @@ public class ClientConnection {
         }
     }
 
+    public void sendSwitchRoom(String roomToSwitchTo, String password){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "SwitchRoom";
+        arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[2] = roomToSwitchTo;
+        arrayToSend[3] = password;
+
+        if(mFutureChannel != null){
+            mFutureChannel.channel().writeAndFlush(arrayToSend);
+        }
+    }
+
     public void sendDisconnectionNotice(){
         Object[] arrayToSend = new Object[2];
         arrayToSend[0] = "DisconnectionNotice";

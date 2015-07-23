@@ -201,7 +201,7 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             String roomToSwitch = (String) incomingData.getData()[2];
             String password = "";
             if(incomingData.getData()[3] != null){
-                 password = Utilities.sha256(((String) incomingData.getData()[3]).toCharArray());
+                 password = (String) incomingData.getData()[3];
             }
 
             ChatRoom oldRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(userToSwitch);
@@ -254,13 +254,6 @@ public class ChatServerHandler extends ChannelHandlerAdapter {
             incomingData.getData()[1] = roomList;
 
             ChannelManager.getInstance().writeToAllClients(incomingData);
-        } else if (commandID.equals("ChangeRoom")) {
-
-            //TODO ChangeRoom server
-            /*
-            ChatRoom room = (ChatRoom)incomingData.getData()[1];
-            ArrayList<ChatRoom> roomList = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
-            incomingData.getData()[1] = roomList;*/
         } else if (commandID.equals("ServerRoomInfo")) {
             HashMap<String, ChatRoom> receivedRooms = (HashMap<String, ChatRoom>) incomingData.getData()[1];
             Iterator it = receivedRooms.entrySet().iterator();

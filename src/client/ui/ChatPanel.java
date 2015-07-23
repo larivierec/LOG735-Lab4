@@ -3,6 +3,7 @@ package client.ui;
 import client.model.*;
 import interfaces.IObserver;
 import messages.Message;
+import util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -154,7 +155,6 @@ public class ChatPanel extends JPanel implements IObserver {
                 this.mCurrentLobby.setText(incomingRoom.getName());
                 this.mChatHistoryModel.clear();
             } else if (command.equals("ChangeRoom")) {
-
                 List<ChatRoom> list = (List<ChatRoom>) localMessage.getData()[1];
                 populateUserList(list);
             } else if (command.equals("AcknowledgeRoomChange")) {
@@ -170,7 +170,9 @@ public class ChatPanel extends JPanel implements IObserver {
                     this.mChatHistoryModel.addElement(message.toString());
                 }
             } else if (command.equals("RequestPassword")){
-
+                ChatRoom roomToConnectTo = (ChatRoom) localMessage.getData()[1];
+                String enteredText = JOptionPane.showInputDialog(this,"Enter a password");
+                mClientConnection.sendSwitchRoom(roomToConnectTo.getName(), Utilities.sha256(enteredText.toCharArray()));
             }
         }
     }
@@ -191,8 +193,7 @@ public class ChatPanel extends JPanel implements IObserver {
     }
 
     private void populateUserList(List<ChatRoom> list) {
-
-        for(ChatRoom chatRoom:list) {
+        for(ChatRoom chatRoom : list) {
             populateUserList(chatRoom);
         }
     }
