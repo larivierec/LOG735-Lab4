@@ -1,6 +1,7 @@
 package client.ui;
 
 import client.model.*;
+import client.ui.listener.PrivateMessageFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import util.Utilities;
@@ -177,7 +178,9 @@ public class ChatPanel extends JPanel implements IObserver {
                 }
             } else if (command.equals("PrivateSessionRequest")){
                 PrivateSession session = (PrivateSession) localMessage.getData()[1];
-                new PrivateMessageFrame(session.getUserList(), mParentFrame.getClientConnection(), mParentFrame.getHandler());
+                PrivateMessageFrame theFrame = new PrivateMessageFrame(session.getUserList(), mParentFrame.getClientConnection(), mParentFrame.getHandler());
+                theFrame.addWindowListener(new PrivateMessageFrameWindowListener(mClientConnection, session));
+                mListOfPrivateFrames.add(theFrame);
             }
         }
     }
@@ -187,9 +190,7 @@ public class ChatPanel extends JPanel implements IObserver {
         if (c.getName().equals(PersistantUser.getInstance().getChatRoom().getName())) {
 
             this.mClientListModel.clear();
-            for(String username : c.getConnectedUsers()){
-                this.mClientListModel.addElement(username);
-            }
+            c.getConnectedUsers().forEach(this.mClientListModel::addElement);
             PersistantUser.getInstance().getChatRoom().setConnectedUsers(c);
         }
     }

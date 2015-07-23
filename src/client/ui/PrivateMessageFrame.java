@@ -78,7 +78,21 @@ public class PrivateMessageFrame extends AbstractFrame implements IObserver {
             if (commandID.equals("ClientPrivateMessage")) {
                 PrivateMessage message = (PrivateMessage) incomingData.getData()[1];
                 mChatHistoryModel.addElement(message.toString());
+            }else if(commandID.equals("PropagationUserSessionTermination")){
+                PrivateSession theSessionToUpdate = (PrivateSession)incomingData.getData()[1];
+                mCurrentSession = theSessionToUpdate;
+                updateUI();
+            } else if(commandID.equals("PrivateSessionRequest")){
+                PrivateSession session = (PrivateSession) incomingData.getData()[1];
+                mCurrentSession = session;
             }
         }
+    }
+
+    private void updateUI(){
+        mClientListModel.clear();
+        mCurrentSession.getUserList().forEach(user -> mClientListModel.addElement(user.getUsername()));
+        mClientList.invalidate();
+        mClientList.repaint();
     }
 }

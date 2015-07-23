@@ -175,7 +175,6 @@ public class ChatServerSSLHandler extends SslHandler {
             Object[] sendRoom = {"NewChatRoom", newRoom};
 
             if (!receivedFromServer(ctx.channel())) {
-
                 ChannelManager.getInstance().writeToAllServers(sendRoom);
             }
 
@@ -321,9 +320,8 @@ public class ChatServerSSLHandler extends SslHandler {
             mPrivateSessionManager.setNextSessionID(session.getSessionID());
             mPrivateSessionManager.addSession(session);
 
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
-                ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData);
-            });
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
+                    ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData));
         } else if(commandID.equals("PrivateMessage")){
             incomingData.getData()[0] = "ClientPrivateMessage";
 
@@ -344,6 +342,24 @@ public class ChatServerSSLHandler extends SslHandler {
             incomingData.getData()[0] = "ClientPrivateMessage";
             ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
                     ChannelManager.getInstance().writeToClientChannel(mUserManager.getUser(username), incomingData));
+        } else if(commandID.equals("PrivateSessionTermination")){
+            incomingData.getData()[0] = "PropagationUserSessionTermination";
+            PrivateSession sessionForUser = (PrivateSession) incomingData.getData()[1];
+            User requestTermination = (User) incomingData.getData()[2];
+            sessionForUser.removeUserFromSession(requestTermination);
+
+            incomingData.getData()[1] = sessionForUser;
+            incomingData.getData()[2] = null;
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
+                    ChannelManager.getInstance().writeToClientChannel(
+                            mUserManager.getUser(username), incomingData));
+            ChannelManager.getInstance().writeToAllServers(incomingData);
+        } else if(commandID.equals("PropagationUserSessionTermination")){
+
+            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
+                    ChannelManager.getInstance().writeToClientChannel(
+                            mUserManager.getUser(username), incomingData));
         }
     }
 

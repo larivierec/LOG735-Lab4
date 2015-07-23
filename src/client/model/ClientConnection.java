@@ -95,6 +95,15 @@ public class ClientConnection {
         sendToServer(arrayToSend);
     }
 
+    public void clientPrivateSessionTermination(PrivateSession e){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "PrivateSessionTermination";
+        arrayToSend[1] = e;
+        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+
+        sendToServer(arrayToSend);
+    }
+
     public void sendPrivateMessage(String textToSend, PrivateSession session){
         Object[] arrayToSend = new Object[10];
         arrayToSend[0] = "PrivateMessage";
