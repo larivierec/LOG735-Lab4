@@ -8,8 +8,6 @@ import client.ui.listener.MainFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientHandler;
-import network.ChatClientSslHandler;
-import server.SSLFactory;
 import util.*;
 
 import javax.swing.*;
@@ -19,7 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
 import java.util.Observable;
 
-public class MainFrame extends JFrame implements IObserver{
+public class MainFrame extends AbstractFrame implements IObserver{
 
     private RegisterPanel mRegistrationPanel = new RegisterPanel();
     private ChatPanel     mChatPanel;
@@ -37,12 +35,9 @@ public class MainFrame extends JFrame implements IObserver{
     private JButton mButtonRegister = new JButton();
     private JButton mButtonLogin = new JButton();
 
-    private ClientConnection mClientConnection;
-    private ChatClientSslHandler mChatClientHandler;
-
     public MainFrame(){
 
-        mChatPanel = new ChatPanel();
+        mChatPanel = new ChatPanel(this);
         this.setTitle("WOW! ChatServer");
         mLoginRegistrationPanel.setLayout(new BorderLayout());
         mLoginRegistrationPanel.setSize(550, 550);
@@ -104,6 +99,21 @@ public class MainFrame extends JFrame implements IObserver{
     public void setChatClientHandler(ChatClientSslHandler c){
         this.mChatClientHandler = c;
         c.addObserver(mChatPanel);
+    }
+
+    public ClientConnection getClientConnection(){
+        return mClientConnection;
+    }
+
+    public ChatClientHandler getHandler(){
+        return mChatClientHandler;
+    }
+
+    public void connectToEndpoint(String address, String port) {
+        ClientConnection tempConnect = new ClientConnection(address,port,mChatClientHandler);
+        this.setClientConnection(tempConnect);
+
+        tempConnect.startClient();
     }
 
     @Override

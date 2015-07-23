@@ -15,6 +15,7 @@ import network.ChatClientSslHandler;
 import server.SSLFactory;
 import util.Utilities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientConnection {
@@ -86,22 +87,33 @@ public class ClientConnection {
     public void sendMessage(String textToSend){
 
         if(!textToSend.replaceAll(" ", "").equals("")) {
-
             Object[] arrayToSend = new Object[10];
             arrayToSend[0] = "IncomingMessage";
             arrayToSend[1] = textToSend;
             arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
             arrayToSend[3] = PersistantUser.getInstance().getChatRoom();
-            if (mFutureChannel != null) {
-                mFutureChannel.channel().writeAndFlush(arrayToSend);
-            }
+            sendToServer(arrayToSend);
         }
     }
 
 
+    public void initiatePrivateMessage(ArrayList<String> users){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "InitiatePrivateSession";
+        arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[2] = users;
 
-    public void sendPrivateMessage(String textToSend, List<User> listOfUsers){
+        sendToServer(arrayToSend);
+    }
 
+    public void sendPrivateMessage(String textToSend, PrivateSession session){
+        Object[] arrayToSend = new Object[10];
+        arrayToSend[0] = "PrivateMessage";
+        arrayToSend[1] = session;
+        arrayToSend[2] = PersistantUser.getInstance().getLoggedInUser();
+        arrayToSend[3] = textToSend;
+
+        sendToServer(arrayToSend);
     }
 
     public void sendCreateRoom(String roomName, char[] pass){
@@ -114,9 +126,7 @@ public class ClientConnection {
             arrayToSend[2] = "";
         arrayToSend[3] = PersistantUser.getInstance().getLoggedInUser();
 
-        if(mFutureChannel != null){
-            mFutureChannel.channel().writeAndFlush(arrayToSend);
-        }
+        sendToServer(arrayToSend);
     }
 
     public void sendSwitchRoom(String roomToSwitchTo){
@@ -125,9 +135,7 @@ public class ClientConnection {
         arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
         arrayToSend[2] = roomToSwitchTo;
 
-        if(mFutureChannel != null){
-            mFutureChannel.channel().writeAndFlush(arrayToSend);
-        }
+        sendToServer(arrayToSend);
     }
 
     public void sendSwitchRoom(String roomToSwitchTo, String password){
@@ -137,16 +145,17 @@ public class ClientConnection {
         arrayToSend[2] = roomToSwitchTo;
         arrayToSend[3] = password;
 
-        if(mFutureChannel != null){
-            mFutureChannel.channel().writeAndFlush(arrayToSend);
-        }
+        sendToServer(arrayToSend);
     }
 
     public void sendDisconnectionNotice(){
         Object[] arrayToSend = new Object[2];
         arrayToSend[0] = "DisconnectionNotice";
         arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
+        sendToServer(arrayToSend);
+    }
 
+    private void sendToServer(Object[] arrayToSend){
         if(mFutureChannel != null){
             mFutureChannel.channel().writeAndFlush(arrayToSend);
         }

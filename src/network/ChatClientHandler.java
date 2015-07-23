@@ -12,6 +12,8 @@ import messages.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 @Deprecated
@@ -20,7 +22,7 @@ public class ChatClientHandler extends ChannelHandlerAdapter{
 
     private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private ChatProtocol mChatProtocol = new ChatProtocol();
-    private List<IObserver> mObserverList = new ArrayList<IObserver>();
+    private CopyOnWriteArrayList<IObserver> mObserverList = new CopyOnWriteArrayList<IObserver>();
 
     private String loadAddress;
     private String loadPort;

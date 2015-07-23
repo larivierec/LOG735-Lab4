@@ -11,16 +11,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatPanel extends JPanel implements IObserver {
 
+    private MainFrame mParentFrame;
     private ClientConnection mClientConnection;
 
     private JLabel mRoomLabel = new JLabel("Room List");
     private DefaultListModel<String> mRoomListModel = new DefaultListModel();
     private JList<String> mRoomList = new JList<>(mRoomListModel);
     private JLabel mClientLabel = new JLabel("Client List");
-    private JList<String> mClientList = new JList<>();
+    private DefaultListModel<String> mClientListModel = new DefaultListModel();
+    private JList<String> mClientList = new JList<>(mClientListModel);
 
     private JLabel mConnectedAsLabel = new JLabel("Connected As: ");
     private JLabel mConnectedAs = new JLabel();
@@ -36,10 +39,14 @@ public class ChatPanel extends JPanel implements IObserver {
     private JTextField mCreateRoomField = new JTextField();
     private JPasswordField mCreateRoomPassField = new JPasswordField();
     private JButton mCreateRoomButton = new JButton("Create Room");
-    private String presentRoomName = "";
-    JScrollPane scrollPane;
 
-    public ChatPanel() {
+    private CopyOnWriteArrayList mListOfPrivateFrames = new CopyOnWriteArrayList<PrivateMessageFrame>();
+
+    private String presentRoomName = "";
+    private JScrollPane scrollPane;
+
+    public ChatPanel(MainFrame parent) {
+        mParentFrame = parent;
         JListRenderer j = new JListRenderer();
         mChatHistory.setCellRenderer(j);
 
@@ -77,8 +84,10 @@ public class ChatPanel extends JPanel implements IObserver {
             mClientConnection.sendSwitchRoom(roomName);
         });
 
-        mRoomList.addMouseListener(new PopClickListener());
+        mRoomList.addMouseListener(new JoinRoomClickListener());
+        mClientList.addMouseListener(new PrivateSessionClickListener());
 
+        mClientList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         mRoomList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         mChatHistory.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -98,7 +107,6 @@ public class ChatPanel extends JPanel implements IObserver {
         this.add(mCreateRoomButton);
         this.add(new JLabel());
         this.setVisible(true);
-
     }
 
     public void setConnectedAs() {
@@ -113,14 +121,11 @@ public class ChatPanel extends JPanel implements IObserver {
     public void update(Observable e, Object t) {
 
         if (t instanceof Message) {
-
             Message localMessage = (Message) t;
             String command = (String) localMessage.getData()[0];
             System.out.println(command);
 
-            if (command.equals("PrivateMessage")) {
-                String userName = (String) localMessage.getData()[1];
-            } else if (command.equals("RoomUserList")) {
+            if (command.equals("RoomUserList")) {
                 ChatRoom c = (ChatRoom) localMessage.getData()[1];
                 List<ChatRoom> rooms = (List<ChatRoom>) localMessage.getData()[2];
                 populateUserList(rooms);
@@ -170,6 +175,9 @@ public class ChatPanel extends JPanel implements IObserver {
                 if(enteredText.length() != 0){
                     mClientConnection.sendSwitchRoom(roomToConnectTo.getName(), Utilities.sha256(enteredText.toCharArray()));
                 }
+            } else if (command.equals("PrivateSessionRequest")){
+                PrivateSession session = (PrivateSession) localMessage.getData()[1];
+                new PrivateMessageFrame(session.getUserList(), mParentFrame.getClientConnection(), mParentFrame.getHandler());
             }
         }
     }
@@ -178,27 +186,36 @@ public class ChatPanel extends JPanel implements IObserver {
 
         if (c.getName().equals(PersistantUser.getInstance().getChatRoom().getName())) {
 
-            String[] userArray = new String[c.getConnectedUsers().size()];
-
-            c.getConnectedUsers().toArray(userArray);
+            this.mClientListModel.clear();
+            for(String username : c.getConnectedUsers()){
+                this.mClientListModel.addElement(username);
+            }
             PersistantUser.getInstance().getChatRoom().setConnectedUsers(c);
-
-            mClientList.setListData(userArray);
-            mClientList.invalidate();
-            mClientList.repaint();
         }
     }
 
     private void populateUserList(List<ChatRoom> list) {
-        for(ChatRoom chatRoom : list) {
-            populateUserList(chatRoom);
-        }
+        list.forEach(this::populateUserList);
     }
 
     public void setClientConnection(ClientConnection c, ChatRoom chatRoom) {
         this.mClientConnection = c;
         PersistantUser.getInstance().setChatRoom(chatRoom);
 
+    }
+
+    /**
+     * This method gets the users from the model including the user requesting itself
+     * @return ArrayList of all the usernames selected
+     */
+
+    public ArrayList<String> getUsersFromModel(){
+        ArrayList<String> temp = new ArrayList<>();
+        for(int i : mClientList.getSelectedIndices()){
+            temp.add(mClientListModel.get(i));
+        }
+        temp.add(PersistantUser.getInstance().getLoggedInUser().getUsername());
+        return temp;
     }
 
     class JListRenderer implements ListCellRenderer {
@@ -248,15 +265,17 @@ public class ChatPanel extends JPanel implements IObserver {
         }
     }
 
-    class PopUpDemo extends JPopupMenu {
+    class JoinRoomMenu extends JPopupMenu {
         JMenuItem anItem;
-        public PopUpDemo(){
-            anItem = new JMenuItem("Click Me!");
+        public JoinRoomMenu(){
+            anItem = new JMenuItem("Join Lobby");
+
+            anItem.addActionListener(e -> mClientConnection.initiatePrivateMessage(getUsersFromModel()));
             add(anItem);
         }
     }
 
-    class PopClickListener extends MouseAdapter {
+    class JoinRoomClickListener extends MouseAdapter {
         public void mousePressed(MouseEvent e){
             if (e.isPopupTrigger())
                 doPop(e);
@@ -268,10 +287,34 @@ public class ChatPanel extends JPanel implements IObserver {
         }
 
         private void doPop(MouseEvent e){
-            PopUpDemo menu = new PopUpDemo();
+            JoinRoomMenu menu = new JoinRoomMenu();
             menu.show(e.getComponent(), e.getX(), e.getY());
         }
     }
 
+    class PrivateSessionMenu extends JPopupMenu {
+        JMenuItem anItem;
+        public PrivateSessionMenu(){
+            anItem = new JMenuItem("Initiate Private Session");
+            anItem.addActionListener(e -> mClientConnection.initiatePrivateMessage(getUsersFromModel()));
+            add(anItem);
+        }
+    }
 
+    class PrivateSessionClickListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e){
+            if (e.isPopupTrigger())
+                doPop(e);
+        }
+
+        public void mouseReleased(MouseEvent e){
+            if (e.isPopupTrigger())
+                doPop(e);
+        }
+
+        private void doPop(MouseEvent e){
+            PrivateSessionMenu menu = new PrivateSessionMenu();
+            menu.show(e.getComponent(), e.getX(), e.getY());
+        }
+    }
 }
