@@ -76,10 +76,6 @@ public class ChatServerSSLHandler extends SslHandler {
             User messageSender = (User) incomingData.getData()[2];
             ChatRoom room = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(messageSender);
 
-            if (incomingData.getData()[3] == null) {
-                incomingData.getData()[0] = "PrivateMessage";
-            }
-
             //if any of these are null there was a problem sending the data
             if (incomingData.getData()[2] != null && room != null) {
                 String text = (String) incomingData.getData()[1];
@@ -107,11 +103,10 @@ public class ChatServerSSLHandler extends SslHandler {
             User temp = mLoginSystem.authenticateUser(username, hashedPW.toCharArray());
             ChatRoom theSelectedRoom = mChatRoomManager.getChatRoom(roomID);
             if (temp != null && theSelectedRoom != null) {
-                if (!mUserManager.getLoggedInUsers().containsKey(temp.getUsername())) {
-
+                if(!mLoginSystem.getLoggedInUsers().contains(temp.getUsername())) {
                     ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
 
-                    if(mUserManager.getUser(temp) == null) {
+                    if (mUserManager.getUser(temp) == null) {
                         mUserManager.addUser(temp);
                         ChannelManager.getInstance().writeToAllServers(new Object[]{"NewConnectedUser", temp});
                     }
@@ -283,10 +278,16 @@ public class ChatServerSSLHandler extends SslHandler {
         } else if(commandID.equals("DisconnectionNotice")){
             User requestingUser = (User)incomingData.getData()[1];
             mLoginSystem.logoutUser(requestingUser);
+            incomingData.getData()[1] = "DisconnectedUser";
 
             ChatRoom currentRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
             ChatRoomManager.getInstance().removeConnectedUser(requestingUser, currentRoom);
             sendUserInfo(incomingData, currentRoom);
+        } else if(commandID.equals("DisconnectedUser")){
+            User requestingUser = (User)incomingData.getData()[1];
+            mLoginSystem.logoutUser(requestingUser);
+            ChatRoom currentRoom = ChatRoomManager.getInstance().getChatRoomAssociatedToUser(requestingUser);
+            ChatRoomManager.getInstance().removeConnectedUser(requestingUser, currentRoom);
         } else if(commandID.equals("NewConnectedUser")){
             User t = (User) incomingData.getData()[1];
             this.mUserManager.addUser(t);
@@ -379,7 +380,6 @@ public class ChatServerSSLHandler extends SslHandler {
     public boolean receivedFromServer(Channel channel) {
 
         for(Channel c : ChannelManager.getInstance().getClientChannels()){
-
             if (c.id().asLongText().equals(channel.id().asLongText())) {
                 return false;
             }
