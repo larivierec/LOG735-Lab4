@@ -13,7 +13,6 @@ public abstract class AbstractFrame extends JFrame {
     protected ChatClientSslHandler mChatClientHandler;
 
     public void setClientConnection(ClientConnection c){
-        this.addWindowListener(new MainFrameWindowListener(c));
         this.mClientConnection = c;
     }
 

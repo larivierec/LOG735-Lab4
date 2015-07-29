@@ -179,7 +179,7 @@ public class ChatPanel extends JPanel implements IObserver {
             } else if (command.equals("PrivateSessionRequest")){
                 PrivateSession session = (PrivateSession) localMessage.getData()[1];
                 PrivateMessageFrame theFrame = new PrivateMessageFrame(session.getUserList(), mParentFrame.getClientConnection(), mParentFrame.getHandler());
-                theFrame.addWindowListener(new PrivateMessageFrameWindowListener(mClientConnection, session));
+                theFrame.addWindowListener(new PrivateMessageFrameWindowListener(mClientConnection, session, mParentFrame.getHandler()));
                 mListOfPrivateFrames.add(theFrame);
             }
         }

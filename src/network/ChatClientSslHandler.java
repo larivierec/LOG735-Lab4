@@ -79,13 +79,16 @@ public class ChatClientSslHandler extends SslHandler{
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        mainFrame.connectToEndpoint(loadAddress,loadPort);
+        mainFrame.connectToEndpoint(loadAddress, loadPort);
     }
 
     public void addObserver(IObserver e){
         mObserverList.add(e);
     }
 
+    public void removeObserver(IObserver e){
+        mObserverList.remove(e);
+    }
     public void notifyObservers(Message m){
         for(IObserver e : mObserverList){
             e.update(null, m);

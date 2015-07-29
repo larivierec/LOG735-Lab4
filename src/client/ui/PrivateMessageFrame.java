@@ -4,6 +4,7 @@ import client.model.ClientConnection;
 import client.model.PrivateMessage;
 import client.model.PrivateSession;
 import client.model.User;
+import client.ui.listener.PrivateMessageFrameWindowListener;
 import interfaces.IObserver;
 import messages.Message;
 import network.ChatClientSslHandler;
