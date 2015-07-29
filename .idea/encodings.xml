@@ -5,5 +5,7 @@
     <file url="file://$PROJECT_DIR$/src/client/ui/MainFrame.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/client/ui/listener/PrivateMessageFrameWindowListener.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/network/ChatServerSSLHandler.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/server/LoginSystem.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/singleton/UserManager.java" charset="UTF-8" />
   </component>
 </project>

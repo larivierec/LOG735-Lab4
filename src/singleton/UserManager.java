@@ -3,12 +3,15 @@ package singleton;
 import client.model.User;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class UserManager {
 
     private static UserManager instance = null;
-    private HashMap<String, User> mLoggedInUsers = new HashMap<String, User>();
+    private HashMap<String, User> mLoggedInUsersMap = new HashMap<String, User>();
+    private CopyOnWriteArrayList<User> mLoggedInUsers = new CopyOnWriteArrayList<>();
     private UserManager(){}
 
     /**
@@ -23,26 +26,50 @@ public class UserManager {
         return instance;
     }
 
-    public void addUser(User e){
-        this.mLoggedInUsers.put(e.getUsername(), e);
+    public void addUserToMap(User e){
+        this.mLoggedInUsersMap.put(e.getUsername(), e);
+        addUserLoggedIn(e);
     }
 
-    public void removeUser(User e){
-        this.mLoggedInUsers.remove(e.getUsername());
+    public void removeUserFromMap(User e){
+        this.mLoggedInUsersMap.remove(e.getUsername());
+        this.mLoggedInUsers.remove(e);
     }
 
-    public User getUser(User e){
-        return mLoggedInUsers.get(e.getUsername());
+    public User getUserFromMap(User e){
+        return mLoggedInUsersMap.get(e.getUsername());
     }
 
-    public User getUser(String e){
-        return mLoggedInUsers.get(e);
+    public User getUserFromMap(String e){
+        return mLoggedInUsersMap.get(e);
     }
 
-    public HashMap<String, User> getLoggedInUsers(){
-        return mLoggedInUsers;
+    public HashMap<String, User> getLoggedInUsersMap(){
+        return mLoggedInUsersMap;
     }
 
-    private void notifyServers(User e){
+    public void setLoggedInUsersMap(HashMap<String, User> map){
+        //only set the map if it is null other wise the new joining server will overwrite it.
+        if(this.mLoggedInUsersMap.size() == 0) {
+            this.mLoggedInUsersMap = map;
+            mLoggedInUsersMap.forEach((username, user) -> mLoggedInUsers.add(user));
+        }
+    }
+
+    private void addUserLoggedIn(User e){
+        this.mLoggedInUsers.add(e);
+    }
+
+    private void removeUserFromLoggedInState(User e){
+        for(User c : mLoggedInUsers){
+            if(c.getUsername().equals(e.getUsername())){
+                mLoggedInUsers.remove(c);
+            }
+        }
+        this.mLoggedInUsers.remove(e);
+    }
+
+    public CopyOnWriteArrayList<User> getLoggedInUsers(){
+        return this.mLoggedInUsers;
     }
 }
