@@ -81,8 +81,10 @@ public class ChatPanel extends JPanel implements IObserver {
 
         mRoomList.addListSelectionListener(e -> {
             JList list = (JList) e.getSource();
-            String roomName = mRoomListModel.getElementAt(list.getSelectedIndex());
-            mClientConnection.sendSwitchRoom(roomName);
+            if(list.getSelectedIndex() != -1) {
+                String roomName = mRoomListModel.getElementAt(list.getSelectedIndex());
+                mClientConnection.sendSwitchRoom(roomName);
+            }
         });
 
         mRoomList.addMouseListener(new JoinRoomClickListener());

@@ -219,9 +219,22 @@ public class ChatServerSSLHandler extends SslHandler {
                     }
                 }
 
+
                 List<ChatRoom> roomList = new ArrayList<>();
 
                 roomList.addAll(ChatRoomManager.getInstance().getChatRoomList().values());
+
+                System.out.println("nombre d'utilisateur: " + oldRoom.getConnectedUsers().size());
+                if(oldRoom.getConnectedUsers().size() == 0) {
+
+                    ChatRoomManager.getInstance().removeChatRoom(oldRoom);
+                    ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+                    System.out.println("rooms number: " + rooms.size());
+
+                    Object[] roomListObject = {"RoomList", rooms};
+                    Message roomListSend = new Message(roomListObject);
+                    ChannelManager.getInstance().writeToAllClients(roomListSend);
+                }
 
                 Object[] sendNewRoom = {"ChangeRoom", roomList};
                 ChannelManager.getInstance().writeToAllClients(sendNewRoom);
