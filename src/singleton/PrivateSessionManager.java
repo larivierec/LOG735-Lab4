@@ -28,6 +28,8 @@ public class PrivateSessionManager {
     }
 
     public int requestSessionID(){
-        return mCurrentSessionID + 1;
+        mCurrentSessionID += 1;
+        ChannelManager.getInstance().writeToAllServers(new Object[]{"SessionIDSynchronisation", mCurrentSessionID});
+        return mCurrentSessionID;
     }
 }
