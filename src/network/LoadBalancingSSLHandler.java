@@ -39,6 +39,7 @@ public class LoadBalancingSSLHandler extends SslHandler{
         if(commandID.equals("ServerData")){
             ChannelManager.getInstance().addChannel(ctx);
             dataIncoming.getData()[0] = "AvailableServer";
+            dataIncoming.getData()[1] = addr.getHostName();
             ChannelManager.getInstance().getPortMapping().put(addr.getPort(), Integer.parseInt((String)dataIncoming.getData()[2]));
             ChannelManager.getInstance().getServerUsage().put(dataIncoming, 0);
             ChannelManager.getInstance().getServerList().add(dataIncoming);

@@ -67,9 +67,7 @@ public class ChatRoomManager implements IObserver{
     }
 
     public void changeRoom(User e, ChatRoom newRoom, ChatRoom chatRoomAssociatedToUser){
-
         if(chatRoomAssociatedToUser != null) {
-
             chatRoomAssociatedToUser.removeConnectedUser(e);
         }
 

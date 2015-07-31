@@ -33,14 +33,15 @@ public class PrivateMessageFrame extends AbstractFrame implements IObserver {
 
     private PrivateMessageFrame(){}
 
-    public PrivateMessageFrame(ArrayList<User> userList, ClientConnection c, ChatClientSslHandler handler) {
+    public PrivateMessageFrame(String userName, PrivateSession session, ClientConnection c, final ChatClientSslHandler handler) {
         super.setClientConnection(c);
         setChatClientHandler(handler);
-        userList.forEach(user -> mClientListModel.addElement(user.getUsername()));
+        this.mCurrentSession = session;
+        session.getUserList().forEach(user -> mClientListModel.addElement(user.getUsername()));
 
         this.setSize(500, 520);
         this.setLayout(new BorderLayout());
-        this.setTitle("Private Messages");
+        this.setTitle("Private Message - Connected as: " + userName);
         mChatScrollPane.setBounds(new Rectangle(175, 35, 300, 250));
         mChatHistory.setBounds(new Rectangle(175, 50, 1000, 1000));
         mTextArea.setBounds(new Rectangle(175,300, 300, 120));
@@ -78,14 +79,12 @@ public class PrivateMessageFrame extends AbstractFrame implements IObserver {
 
             if (commandID.equals("ClientPrivateMessage")) {
                 PrivateMessage message = (PrivateMessage) incomingData.getData()[1];
-                mChatHistoryModel.addElement(message.toString());
+                if(mCurrentSession.getSessionID() == message.getSession().getSessionID())
+                    mChatHistoryModel.addElement(message.toString());
             }else if(commandID.equals("PropagationUserSessionTermination")){
                 PrivateSession theSessionToUpdate = (PrivateSession)incomingData.getData()[1];
                 mCurrentSession = theSessionToUpdate;
                 updateUI();
-            } else if(commandID.equals("PrivateSessionRequest")){
-                PrivateSession session = (PrivateSession) incomingData.getData()[1];
-                mCurrentSession = session;
             }
         }
     }
