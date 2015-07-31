@@ -37,11 +37,12 @@ public class UserManager {
     }
 
     public User getUserFromMap(User e){
-        return mLoggedInUsersMap.get(e.getUsername());
+        return (mLoggedInUsersMap.containsKey(e.getUsername())) ? mLoggedInUsersMap.get(e.getUsername()) : null;
     }
 
     public User getUserFromMap(String e){
-        return mLoggedInUsersMap.get(e);
+        return (mLoggedInUsersMap.containsKey(e)) ? mLoggedInUsersMap.get(e) : null;
+
     }
 
     public HashMap<String, User> getLoggedInUsersMap(){

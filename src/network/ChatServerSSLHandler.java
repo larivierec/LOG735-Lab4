@@ -219,9 +219,22 @@ public class ChatServerSSLHandler extends SslHandler {
                     }
                 }
 
+
                 List<ChatRoom> roomList = new ArrayList<>();
 
                 roomList.addAll(ChatRoomManager.getInstance().getChatRoomList().values());
+
+                System.out.println("nombre d'utilisateur: " + oldRoom.getConnectedUsers().size());
+                if(oldRoom.getConnectedUsers().size() == 0) {
+
+                    ChatRoomManager.getInstance().removeChatRoom(oldRoom);
+                    ArrayList<ChatRoom> rooms = new ArrayList<>(mChatRoomManager.getChatRoomList().values());
+                    System.out.println("rooms number: " + rooms.size());
+
+                    Object[] roomListObject = {"RoomList", rooms};
+                    Message roomListSend = new Message(roomListObject);
+                    ChannelManager.getInstance().writeToAllClients(roomListSend);
+                }
 
                 Object[] sendNewRoom = {"ChangeRoom", roomList};
                 ChannelManager.getInstance().writeToAllClients(sendNewRoom);
@@ -304,17 +317,25 @@ public class ChatServerSSLHandler extends SslHandler {
 
             mPrivateSessionManager.addSession(session);
 
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
-                    ChannelManager.getInstance().writeToClientChannel(mLoginSystem.getUserFromSystem(username), arrayToSend));
-
-            ChannelManager.getInstance().writeToAllServers(arrayToSend);
+            for(User u :  session.getUserList()){
+                User systemUser =  mLoginSystem.getUserFromSystem(u);
+                Channel theChannel = ChannelManager.getInstance().getClientChannelMap().get(systemUser.getUsername());
+                if(systemUser != null && theChannel != null)
+                    theChannel.writeAndFlush(arrayToSend);
+                else
+                    ChannelManager.getInstance().writeToAllServers(arrayToSend);
+            }
         } else if(commandID.equals("PrivateSessionRequest")){
             PrivateSession session = (PrivateSession)incomingData.getData()[1];
             mPrivateSessionManager.setNextSessionID(session.getSessionID());
             mPrivateSessionManager.addSession(session);
 
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
-                    ChannelManager.getInstance().writeToClientChannel(mLoginSystem.getUserFromSystem(username), incomingData));
+            for(User u :  session.getUserList()){
+                User systemUser =  mLoginSystem.getUserFromSystem(u);
+                Channel theChannel = ChannelManager.getInstance().getClientChannelMap().get(systemUser.getUsername());
+                if(systemUser != null && theChannel != null)
+                    theChannel.writeAndFlush(incomingData);
+            }
         } else if(commandID.equals("PrivateMessage")){
             incomingData.getData()[0] = "ClientPrivateMessage";
 
@@ -324,17 +345,27 @@ public class ChatServerSSLHandler extends SslHandler {
 
             PrivateMessage messageToSend = new PrivateMessage(sendingUser.getUsername(), messageSend, session);
             incomingData.getData()[1] = messageToSend;
-            incomingData.getData()[2] = null;
-            incomingData.getData()[3] = null;
 
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) -> {
-                ChannelManager.getInstance().writeToClientChannel(mLoginSystem.getUserFromSystem(username), incomingData);
-            });
-            ChannelManager.getInstance().writeToAllServers(incomingData);
+            Object[] data = new Object[]{"ClientPrivateMessage", messageToSend};
+
+
+            for(User u :  session.getUserList()){
+                User systemUser =  mLoginSystem.getUserFromSystem(u);
+                Channel theChannel = ChannelManager.getInstance().getClientChannelMap().get(systemUser.getUsername());
+                if(systemUser != null && theChannel != null)
+                    theChannel.writeAndFlush(data);
+                else
+                    ChannelManager.getInstance().writeToAllServers(data);
+            }
         } else if(commandID.equals("ClientPrivateMessage")){
-            incomingData.getData()[0] = "ClientPrivateMessage";
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
-                    ChannelManager.getInstance().writeToClientChannel(mLoginSystem.getUserFromSystem(username), incomingData));
+            PrivateMessage message = (PrivateMessage) incomingData.getData()[1];
+
+            for(User u :  message.getSession().getUserList()){
+                User systemUser =  mLoginSystem.getUserFromSystem(u);
+                Channel theChannel = ChannelManager.getInstance().getClientChannelMap().get(systemUser.getUsername());
+                if(systemUser != null && theChannel != null)
+                    theChannel.writeAndFlush(incomingData);
+            }
         } else if(commandID.equals("PrivateSessionTermination")){
             incomingData.getData()[0] = "PropagationUserSessionTermination";
             PrivateSession sessionForUser = (PrivateSession) incomingData.getData()[1];
@@ -344,17 +375,28 @@ public class ChatServerSSLHandler extends SslHandler {
             incomingData.getData()[1] = sessionForUser;
             incomingData.getData()[2] = null;
 
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
-                    ChannelManager.getInstance().writeToClientChannel(
-                            mLoginSystem.getUserFromSystem(username), incomingData));
-            ChannelManager.getInstance().writeToAllServers(incomingData);
+            for(User u :  sessionForUser.getUserList()){
+                User systemUser =  mLoginSystem.getUserFromSystem(u);
+                Channel theChannel = ChannelManager.getInstance().getClientChannelMap().get(systemUser.getUsername());
+                if(systemUser != null && theChannel != null)
+                    theChannel.writeAndFlush(incomingData);
+                else
+                    ChannelManager.getInstance().writeToAllServers(incomingData);
+            }
         } else if(commandID.equals("PropagationUserSessionTermination")){
-            ChannelManager.getInstance().getClientChanneMap().forEach((username, channel) ->
-                    ChannelManager.getInstance().writeToClientChannel(
-                            mLoginSystem.getUserFromSystem(username), incomingData));
+            PrivateSession session = (PrivateSession) incomingData.getData()[1];
+
+            session.getUserList().forEach(user -> {
+                User systemUser = mLoginSystem.getUserFromSystem(user);
+                if (systemUser != null)
+                    ChannelManager.getInstance().writeToClientChannel(systemUser, incomingData);
+            });
         } else if(commandID.equals("LoggedInUserInfo")){
             HashMap<String, User> mIncomingUserMap = (HashMap<String, User>) incomingData.getData()[1];
             mLoginSystem.setLoggedInUserMap(mIncomingUserMap);
+        } else if(commandID.equals("SessionIDSynchronisation")){
+            Integer nextSessionID = (Integer) incomingData.getData()[1];
+            mPrivateSessionManager.setNextSessionID(nextSessionID);
         }
     }
 

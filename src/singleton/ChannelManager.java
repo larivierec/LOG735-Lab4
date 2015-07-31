@@ -76,16 +76,20 @@ public class ChannelManager {
     }
 
     public void addServerToServer(ServerToServerConnection s){
-        if(!this.mServerToServerMap.contains(s)){
-            this.mServerToServerMap.add(s);
+        boolean okToAdd = true;
+        for(ServerToServerConnection c : mServerToServerMap){
+            if(c.getRemotePort() == s.getRemotePort())
+                okToAdd = false;
         }
+        if(okToAdd)
+            this.mServerToServerMap.add(s);
     }
 
     public List<Channel> getClientChannels() {
         return mClientChannels;
     }
 
-    public HashMap<String, Channel> getClientChanneMap(){
+    public HashMap<String, Channel> getClientChannelMap(){
         return mClientChannelMap;
     }
 
@@ -105,11 +109,13 @@ public class ChannelManager {
 
 
     public void writeToClientChannel(User e, Object[] data){
-        mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
+        if(mClientChannelMap.containsKey(e.getUsername()))
+            mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
     }
     
     public void writeToClientChannel(User e, Message data){
-        mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
+        if(mClientChannelMap.containsKey(e.getUsername()))
+            mClientChannelMap.get(e.getUsername()).writeAndFlush(data);
     }
 
     public void writeToAllServers(Object[] data){
