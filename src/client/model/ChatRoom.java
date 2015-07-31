@@ -8,6 +8,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @class ChatRoom
+ * @implSpec Serializable is implemented here for use with Netty.
+ * Objects must be serialized before being sent
+ */
+
 public class ChatRoom implements Serializable, Comparator<ChatRoom>{
 
     private String name;
@@ -58,6 +64,10 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.mConnectedUsers.add(userName);
     }
 
+    /**
+     * Looks for a specific user and removes it.
+     * @param c User to search for
+     */
     public void removeConnectedUser(User c){
         this.mConnectedUsers.forEach(userName -> {
             if (userName.equals(c.getUsername())) {
@@ -70,6 +80,11 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.mConnectedUsers = c.getConnectedUsers();
     }
 
+
+    /**
+     * Add a LobbyMessage to the ChatRoom
+     * @param t LobbyMessage
+     */
     public void addMessage(LobbyMessage t){
         this.mChatRoomMessages.add(t);
     }
@@ -78,15 +93,12 @@ public class ChatRoom implements Serializable, Comparator<ChatRoom>{
         this.mChatRoomMessages = messages;
     }
 
-    public void addObserver(ChatRoomManager c){
-        this.mObserverList.add(c);
-    }
-
-    public void notifyObserver(ChatRoom c){
-        this.mObserverList.forEach(manager -> {
-            manager.update(null, c);
-        });
-    }
+    /**
+     * Used by interface Comparator (Java API)
+     * @param o1 ChatRoom
+     * @param o2 ChatRoom to compare with
+     * @return 0 for equals, 1 for bigger than, -1 for smaller.
+     */
 
     @Override
     public int compare(ChatRoom o1, ChatRoom o2) {

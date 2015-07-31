@@ -21,6 +21,11 @@ import util.SSLFactory;
 
 import java.util.Observable;
 
+/**
+ * @class ChatServer
+ * @desc The Chat Server for the application
+ */
+
 public class ChatServer implements IServer{
 
     private String      mIPAddress;

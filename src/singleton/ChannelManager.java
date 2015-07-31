@@ -11,7 +11,11 @@ import network.ServerToServerConnection;
 
 import java.util.*;
 
-
+/**
+ * @class ChannelManager
+ * @desc Manages all communication between clients and servers
+ * There are one of these on each chat server
+ */
 public class ChannelManager {
 
     private static ChannelManager instance;

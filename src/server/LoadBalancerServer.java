@@ -18,6 +18,11 @@ import util.SSLFactory;
 
 import java.util.Observable;
 
+/**
+ * @class LoadBalancerServer
+ * @desc The Load Balancer Server
+ */
+
 public class LoadBalancerServer implements IServer{
 
     private String  mIPAddress;

@@ -47,6 +47,13 @@ public class ChatServerSSLHandler extends SslHandler {
         ctx.writeAndFlush(arrayToSend);
     }
 
+    /**
+     * This method contains all the different commands that can be issued to a server
+     * NOTE: it's a little long (to refactor)
+     * @param ctx, the current channel that was read
+     * @param msg, the object that was passed through and will be parsed by the protocol
+     */
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Message incomingData = mChatProtocol.parseProtocolData(msg);

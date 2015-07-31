@@ -12,6 +12,11 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import singleton.ChatRoomManager;
 
+/**
+ * @class ServerToServerConnection
+ * @desc creates the connections between servers (distributed)
+ */
+
 public class ServerToServerConnection {
 
     private final Bootstrap mClientBootStrap = new Bootstrap();

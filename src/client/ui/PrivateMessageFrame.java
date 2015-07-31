@@ -14,6 +14,11 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Observable;
 
+/**
+ * @class PrivateMessage
+ * @desc Frame that opens once a private session has been created between a number of users
+ */
+
 public class PrivateMessageFrame extends AbstractFrame implements IObserver {
 
     private PrivateSession mCurrentSession;

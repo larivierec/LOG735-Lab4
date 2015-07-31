@@ -15,6 +15,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Observable;
 
+/**
+ * @class MainFrame
+ * @desc Class that loads upon opening of the application
+ */
+
 public class MainFrame extends AbstractFrame implements IObserver{
 
     private RegisterPanel mRegistrationPanel = new RegisterPanel();

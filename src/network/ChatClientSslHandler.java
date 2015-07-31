@@ -16,9 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @class ChatClientSslHandler
+ * @desc Class used to handle SSL communication between clients and servers
+ */
+
 public class ChatClientSslHandler extends SslHandler{
 
-    private static final ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     private ChatProtocol mChatProtocol = new ChatProtocol();
     private CopyOnWriteArrayList<IObserver> mObserverList = new CopyOnWriteArrayList<IObserver>();
 

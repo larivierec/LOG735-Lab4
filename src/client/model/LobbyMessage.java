@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * @class LobbyMessage
+ * @desc class that is used to track messages in the chatroom
+ */
 
 public class LobbyMessage implements Serializable{
 

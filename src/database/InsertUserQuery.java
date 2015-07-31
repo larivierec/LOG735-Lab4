@@ -8,6 +8,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * @class InsertUserQuery
+ * @desc Class used to insert a user into the database
+ */
 
 public class InsertUserQuery{
     private String mUsername;

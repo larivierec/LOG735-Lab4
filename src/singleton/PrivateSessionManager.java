@@ -5,6 +5,12 @@ import client.model.PrivateSession;
 
 import java.util.HashMap;
 
+/**
+ * @class PrivateSessionManager
+ * @desc Manages all private sessions on this server
+ * there are one of these on each server
+ */
+
 public class PrivateSessionManager {
     private static PrivateSessionManager instance = null;
     private HashMap<Integer, PrivateSession> mSessions = new HashMap<>();

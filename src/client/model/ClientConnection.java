@@ -69,12 +69,20 @@ public class ClientConnection {
         }
     }
 
+    /**
+     * Sends login information to the server
+     * @param arrayToSend
+     */
     public void sendLoginRequest(String[] arrayToSend){
         this.mFutureChannel.channel().writeAndFlush(arrayToSend);
     }
 
-    public void sendMessage(String textToSend){
+    /**
+     * Sends a lobby message to a specific ChatRoom
+     * @param textToSend
+     */
 
+    public void sendMessage(String textToSend){
         if(!textToSend.replaceAll(" ", "").equals("")) {
             Object[] arrayToSend = new Object[10];
             arrayToSend[0] = "IncomingMessage";
@@ -85,6 +93,10 @@ public class ClientConnection {
         }
     }
 
+    /**
+     * Sends the initiate private session command
+     * @param users
+     */
 
     public void initiatePrivateMessage(ArrayList<String> users){
         Object[] arrayToSend = new Object[10];
@@ -95,6 +107,11 @@ public class ClientConnection {
         sendToServer(arrayToSend);
     }
 
+    /**
+     * Initiates the users termination of it's private messaging session
+     * @param e
+     */
+
     public void clientPrivateSessionTermination(PrivateSession e){
         Object[] arrayToSend = new Object[10];
         arrayToSend[0] = "PrivateSessionTermination";
@@ -103,6 +120,12 @@ public class ClientConnection {
 
         sendToServer(arrayToSend);
     }
+
+    /**
+     * Sends a private message to a specific session
+     * @param textToSend
+     * @param session
+     */
 
     public void sendPrivateMessage(String textToSend, PrivateSession session){
         Object[] arrayToSend = new Object[10];
@@ -113,6 +136,12 @@ public class ClientConnection {
 
         sendToServer(arrayToSend);
     }
+
+    /**
+     * Send the command to create a new room on the server and automatically change room
+     * @param roomName
+     * @param pass
+     */
 
     public void sendCreateRoom(String roomName, char[] pass){
         Object[] arrayToSend = new Object[10];
@@ -127,6 +156,11 @@ public class ClientConnection {
         sendToServer(arrayToSend);
     }
 
+    /**
+     * Send switch room command to the server
+     * @param roomToSwitchTo
+     */
+
     public void sendSwitchRoom(String roomToSwitchTo){
         Object[] arrayToSend = new Object[10];
         arrayToSend[0] = "SwitchRoom";
@@ -135,6 +169,7 @@ public class ClientConnection {
 
         sendToServer(arrayToSend);
     }
+
 
     public void sendSwitchRoom(String roomToSwitchTo, String password){
         Object[] arrayToSend = new Object[10];
@@ -146,12 +181,21 @@ public class ClientConnection {
         sendToServer(arrayToSend);
     }
 
+    /**
+     * Send user termination notice
+     */
+
     public void sendDisconnectionNotice(){
         Object[] arrayToSend = new Object[2];
         arrayToSend[0] = "DisconnectionNotice";
         arrayToSend[1] = PersistantUser.getInstance().getLoggedInUser();
         sendToServer(arrayToSend);
     }
+
+    /**
+     * private method that actually does the sending of the information.
+     * @param arrayToSend
+     */
 
     private void sendToServer(Object[] arrayToSend){
         if(mFutureChannel != null){

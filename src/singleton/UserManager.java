@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @class UserManager
+ * @desc this class is used by the login system which is instantiated by each each chat server
+ */
 
 public class UserManager {
 

@@ -8,6 +8,12 @@ import wrappers.ChatRoomListWrapper;
 import java.util.HashMap;
 import java.util.Observable;
 
+/**
+ * @class ChatRoomManager
+ * @desc Manages all chatrooms on a server
+ * There are one of these on each instantiated servers
+ */
+
 public class ChatRoomManager implements IObserver{
 
     private static ChatRoomManager mChatRoomManagerInstance = null;

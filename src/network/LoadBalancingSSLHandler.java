@@ -12,7 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by d.budka on 2015-07-23.
+ * @class LoadBalancingSSLHandler
+ * @desc Handles the load balancing server requests
  */
 public class LoadBalancingSSLHandler extends SslHandler{
 

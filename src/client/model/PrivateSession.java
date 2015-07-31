@@ -6,6 +6,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * @class PrivateSession
+ * @desc Class used to track the users in a specific session
+ */
+
 public class PrivateSession implements Serializable{
     private HashMap<String, User> mUsersInSession = new HashMap<>();
     private int mSessionID;

@@ -2,6 +2,11 @@ package messages;
 
 import java.io.Serializable;
 
+/**
+ * @class Message
+ * @desc Message class used in handlers for parsing
+ */
+
 public class Message implements Serializable {
     private Object[] mData;
 

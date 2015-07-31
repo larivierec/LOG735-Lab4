@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * @class PrivateMessage
+ * @desc class used for the private messages
+ */
+
 public class PrivateMessage implements Serializable {
 
     private String mText;
